@@ -5,12 +5,20 @@ export default class Card extends React.Component {
         super(props)
     }
     render(){
-
         return (
             <div className="card">
-                <span></span>
+                <span>{this.props.name}({this.props.value})</span>
             </div>
         );
     }
-
 }
+
+Card.propTypes = {
+    value: React.PropTypes.number,
+    name:  React.PropTypes.string
+};
+Card.defaultProps = {
+    value: 0,
+    name: '',
+    rank: ''
+};

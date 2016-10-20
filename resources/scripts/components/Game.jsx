@@ -3,39 +3,51 @@ import $ from 'jquery';
 import Table from './Table.jsx';
 
 export default class Game extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
-            deck: {},
             balance: 0
         };
-        this.newGame = this.newGame.bind(this);
+        this.getBalance = this.getBalance.bind(this);
+        this.updateBalance = this.updateBalance.bind(this);
     }
 
     componentDidMount(){
-        this.newGame();
+        this.getBalance();
     }
-    newGame(){
-        $.post(this.props.source)
-        .done((result) => {
+
+    getBalance(){
+        $.get(this.props.balanceSource, null,(result) => {
             this.setState({
-                deck: result.deck,
                 balance: result.balance
-            });
-        })
+            })}, 'json')
         .fail((xhr, status, err) => {
             console.error(this.props.url, status, err.toString());
         });
     }
 
+    updateBalance(change){
+        this.setState({
+            balance: this.state.balance + change
+        });
+        /*$.post(this.props.balanceSource, null,(result) => {
+            console.log(result.deck);
+            this.setState({
+                balance: result.balance
+            })}, 'json')
+            .fail((xhr, status, err) => {
+                console.error(this.props.url, status, err.toString());
+            });*/
+    }
+
     render(){
-        return ( <Table deck={this.state.deck} balance={this.state.balance} onNewGame={this.newGame} numberOfBoxes="3" />);
+        return ( <Table deckSource='/blackjack/deck' balance={this.state.balance} onUpdateBalance={this.updateBalance} numberOfBoxes={3} />);
     }
 }
 
 Game.propTypes = {
-    source: React.PropTypes.string
+    balanceSource: React.PropTypes.string
 };
 Game.defaultProps = {
-    source: '/blackjack/deck'
+    balanceSource: '/blackjack/balance'
 };

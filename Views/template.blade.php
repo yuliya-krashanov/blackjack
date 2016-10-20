@@ -3,7 +3,7 @@
 <head>
     <title>@yield('title')</title>
     @section('styles')
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @show
 </head>
 <body>

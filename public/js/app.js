@@ -17,7 +17,7 @@ require("lodash");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_reactDom2.default.render(_react2.default.createElement(_Game2.default, { source: "/blackjack/deck" }), document.getElementById('blackjack'));
+_reactDom2.default.render(_react2.default.createElement(_Game2.default, { balanceSource: "/blackjack/balance" }), document.getElementById('blackjack'));
 
 },{"./components/Game.jsx":6,"lodash":35,"react":181,"react-dom":38}],2:[function(require,module,exports){
 "use strict";
@@ -52,10 +52,10 @@ var BetInterface = function (_React$Component) {
     _createClass(BetInterface, [{
         key: "render",
         value: function render() {
-            var bets = this.props.betSizes.map(function (bet) {
+            var bets = this.props.betSizes.map(function (bet, i) {
                 return _react2.default.createElement(
                     "option",
-                    { value: bet },
+                    { key: i, value: bet },
                     bet
                 );
             });
@@ -63,7 +63,7 @@ var BetInterface = function (_React$Component) {
             for (var i = 1; i <= this.props.numberOfBoxes; i++) {
                 boxes.push(_react2.default.createElement(
                     "option",
-                    { value: i },
+                    { key: i, value: i },
                     i
                 ));
             }
@@ -159,13 +159,37 @@ var Box = function (_React$Component) {
         key: 'render',
         value: function render() {
             var cards = this.props.cards.map(function (card) {
-                return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank });
+                return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank, key: card.name });
             });
             return _react2.default.createElement(
                 'div',
                 { className: 'box' },
-                cards,
-                _react2.default.createElement(_PlayerInterface2.default, { cards: this.props.cards })
+                _react2.default.createElement(
+                    'label',
+                    null,
+                    'Cards:'
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'cards' },
+                    cards
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'score' },
+                    this.props.score
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'bet' },
+                    'Bet: ',
+                    this.props.bet
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'result' },
+                    this.props.result
+                )
             );
         }
     }]);
@@ -175,8 +199,20 @@ var Box = function (_React$Component) {
 
 exports.default = Box;
 
+
+Box.propTypes = {
+    cards: _react2.default.PropTypes.array,
+    result: _react2.default.PropTypes.number,
+    bet: _react2.default.PropTypes.number
+};
+Box.defaultProps = {
+    cards: [],
+    result: 0,
+    bet: 0
+};
+
 },{"./Card.jsx":4,"./PlayerInterface.jsx":7,"react":181}],4:[function(require,module,exports){
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -184,7 +220,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _react = require("react");
+var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
@@ -206,13 +242,19 @@ var Card = function (_React$Component) {
     }
 
     _createClass(Card, [{
-        key: "render",
+        key: 'render',
         value: function render() {
-
             return _react2.default.createElement(
-                "div",
-                { className: "card" },
-                _react2.default.createElement("span", null)
+                'div',
+                { className: 'card' },
+                _react2.default.createElement(
+                    'span',
+                    null,
+                    this.props.name,
+                    '(',
+                    this.props.value,
+                    ')'
+                )
             );
         }
     }]);
@@ -221,6 +263,17 @@ var Card = function (_React$Component) {
 }(_react2.default.Component);
 
 exports.default = Card;
+
+
+Card.propTypes = {
+    value: _react2.default.PropTypes.number,
+    name: _react2.default.PropTypes.string
+};
+Card.defaultProps = {
+    value: 0,
+    name: '',
+    rank: ''
+};
 
 },{"react":181}],5:[function(require,module,exports){
 'use strict';
@@ -259,17 +312,26 @@ var Dealer = function (_React$Component) {
     _createClass(Dealer, [{
         key: 'render',
         value: function render() {
-            var cards = this.props.cards.map(function (card) {
-                return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank });
+            var cards = this.props.cards.map(function (card, i) {
+                return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank, key: i });
             });
             return _react2.default.createElement(
                 'div',
                 { className: 'dealer' },
-                cards,
+                _react2.default.createElement(
+                    'label',
+                    { htmlFor: 'dealer-cards' },
+                    'Dealer:'
+                ),
                 _react2.default.createElement(
                     'div',
-                    { className: 'result' },
-                    this.props.result
+                    { className: 'cards', id: 'dealer-cards' },
+                    cards
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'score' },
+                    this.props.score || ''
                 )
             );
         }
@@ -328,36 +390,50 @@ var Game = function (_React$Component) {
         var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this, props));
 
         _this.state = {
-            deck: {},
             balance: 0
         };
-        _this.newGame = _this.newGame.bind(_this);
+        _this.getBalance = _this.getBalance.bind(_this);
+        _this.updateBalance = _this.updateBalance.bind(_this);
         return _this;
     }
 
     _createClass(Game, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            this.newGame();
+            this.getBalance();
         }
     }, {
-        key: 'newGame',
-        value: function newGame() {
+        key: 'getBalance',
+        value: function getBalance() {
             var _this2 = this;
 
-            _jquery2.default.post(this.props.source).done(function (result) {
+            _jquery2.default.get(this.props.balanceSource, null, function (result) {
                 _this2.setState({
-                    deck: result.deck,
                     balance: result.balance
                 });
-            }).fail(function (xhr, status, err) {
+            }, 'json').fail(function (xhr, status, err) {
                 console.error(_this2.props.url, status, err.toString());
             });
         }
     }, {
+        key: 'updateBalance',
+        value: function updateBalance(change) {
+            this.setState({
+                balance: this.state.balance + change
+            });
+            /*$.post(this.props.balanceSource, null,(result) => {
+                console.log(result.deck);
+                this.setState({
+                    balance: result.balance
+                })}, 'json')
+                .fail((xhr, status, err) => {
+                    console.error(this.props.url, status, err.toString());
+                });*/
+        }
+    }, {
         key: 'render',
         value: function render() {
-            return _react2.default.createElement(_Table2.default, { deck: this.state.deck, balance: this.state.balance, onNewGame: this.newGame, numberOfBoxes: '3' });
+            return _react2.default.createElement(_Table2.default, { deckSource: '/blackjack/deck', balance: this.state.balance, onUpdateBalance: this.updateBalance, numberOfBoxes: 3 });
         }
     }]);
 
@@ -368,10 +444,10 @@ exports.default = Game;
 
 
 Game.propTypes = {
-    source: _react2.default.PropTypes.string
+    balanceSource: _react2.default.PropTypes.string
 };
 Game.defaultProps = {
-    source: '/blackjack/deck'
+    balanceSource: '/blackjack/balance'
 };
 
 },{"./Table.jsx":8,"jquery":34,"react":181}],7:[function(require,module,exports){
@@ -395,26 +471,66 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Interface = function (_React$Component) {
-    _inherits(Interface, _React$Component);
+var PlayerInterface = function (_React$Component) {
+    _inherits(PlayerInterface, _React$Component);
 
-    function Interface(props) {
-        _classCallCheck(this, Interface);
+    function PlayerInterface(props) {
+        _classCallCheck(this, PlayerInterface);
 
-        return _possibleConstructorReturn(this, (Interface.__proto__ || Object.getPrototypeOf(Interface)).call(this, props));
+        return _possibleConstructorReturn(this, (PlayerInterface.__proto__ || Object.getPrototypeOf(PlayerInterface)).call(this, props));
     }
 
-    _createClass(Interface, [{
+    _createClass(PlayerInterface, [{
         key: "render",
         value: function render() {
-            return _react2.default.createElement("div", { className: "card" });
+            return _react2.default.createElement(
+                "div",
+                { className: "play" },
+                _react2.default.createElement(
+                    "p",
+                    { className: "current" },
+                    this.props.currentBox
+                ),
+                _react2.default.createElement(
+                    "div",
+                    { className: "buttons" },
+                    _react2.default.createElement(
+                        "button",
+                        { onClick: this.props.hit },
+                        "Hit"
+                    ),
+                    _react2.default.createElement(
+                        "button",
+                        { onClick: this.props.stand },
+                        "Stand"
+                    ),
+                    _react2.default.createElement(
+                        "button",
+                        { onClick: this.props.double },
+                        "Hit"
+                    ),
+                    _react2.default.createElement(
+                        "button",
+                        { onClick: this.props.split },
+                        "Split"
+                    )
+                )
+            );
         }
     }]);
 
-    return Interface;
+    return PlayerInterface;
 }(_react2.default.Component);
 
-exports.default = Interface;
+exports.default = PlayerInterface;
+
+
+PlayerInterface.propTypes = {
+    currentBox: _react2.default.PropTypes.number
+};
+PlayerInterface.defaultProps = {
+    currentBox: 3
+};
 
 },{"react":181}],8:[function(require,module,exports){
 'use strict';
@@ -428,6 +544,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
+
+var _jquery = require('jquery');
+
+var _jquery2 = _interopRequireDefault(_jquery);
 
 var _Dealer = require('./Dealer.jsx');
 
@@ -462,42 +582,66 @@ var Table = function (_React$Component) {
             boxes[i] = {
                 bet: 0,
                 cards: [],
-                score: 0
+                score: 0,
+                result: ''
             };
         }
 
         _this.betSizes = [5, 25, 100, 200, 500];
 
         _this.state = {
-            deck: _this.props.deck,
-            balance: _this.props.balance,
+            deck: [],
             boxes: boxes,
             dealer: {
                 cards: [],
                 score: 0
-            }
+            },
+            betInterface: true
         };
 
         _this.bet = _this.bet.bind(_this);
         _this.deal = _this.deal.bind(_this);
+        _this.deck = _this.deck.bind(_this);
         _this.dealCards = _this.dealCards.bind(_this);
+        _this.hit = _this.hit.bind(_this);
+        _this.stand = _this.stand.bind(_this);
+        _this.double = _this.double.bind(_this);
+        _this.split = _this.split.bind(_this);
+        _this.insurance = _this.insurance.bind(_this);
         return _this;
     }
 
     _createClass(Table, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.deck();
+        }
+    }, {
         key: 'bet',
         value: function bet(e) {
             e.preventDefault();
-            console.log(e.target);
-            /* if ((this.state.balance - amount) < 0)
-                 console.log('No money');
-             else{
-                // this.state.boxes[box].bet += amount;
-                 this.setState({
-                     boxes: this.state.bets,
-                     //balance: this.state.balance - amount
-                 });
-             }*/
+            var amount = e.target.elements['bet-amount'].value;
+            var box = e.target.elements['box-number'].value;
+            if (this.props.balance - amount < 0) alert('Not enough money :(');else {
+                this.state.boxes[box].bet += +amount;
+                this.setState({
+                    boxes: this.state.boxes
+                });
+                this.props.onUpdateBalance(-amount);
+            }
+        }
+    }, {
+        key: 'deck',
+        value: function deck() {
+            var _this2 = this;
+
+            _jquery2.default.get(this.props.deckSource, null, function (result) {
+                _this2.setState({
+                    deck: result.deck
+                });
+            }, 'json').fail(function (xhr, status, err) {
+                console.error(_this2.props.url, status, err.toString());
+            });
         }
     }, {
         key: 'deal',
@@ -505,11 +649,13 @@ var Table = function (_React$Component) {
             var boxes = this.state.boxes;
             var dealer = this.state.dealer;
             for (var box in boxes) {
-                if (box.bet > 0) {
-                    box.cards.push(this.dealCards(2));
+                if (boxes[box].bet > 0) {
+                    boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
                 }
             }
-            dealer.cards.push(this.dealCards(2));
+            dealer.cards = dealer.cards.concat(this.dealCards(2));
+
+            this.setState({ boxes: boxes, dealer: dealer, betInterface: false });
         }
     }, {
         key: 'dealCards',
@@ -520,14 +666,62 @@ var Table = function (_React$Component) {
             for (number; number > 0; number--) {
                 hand.push(deck.pop());
             }
-            this.setState();
+            this.setState({ deck: deck });
+            return hand;
         }
+    }, {
+        key: 'hit',
+        value: function hit() {
+            this.state.boxes[this.state.currentBox].cards.push(dealCards(1));
+            this.setState({ boxes: this.state.boxes });
+            this.checkScore();
+        }
+    }, {
+        key: 'stand',
+        value: function stand() {
+            this.changeBox();
+        }
+    }, {
+        key: 'double',
+        value: function double() {
+            var boxes = this.state.boxes;
+            var current = this.state.currentBox;
+            boxes[current].bet *= 2;
+            boxes[current].cards.push(dealCards(1));
+            this.setState({ boxes: boxes });
+            this.changeBox();
+        }
+    }, {
+        key: 'split',
+        value: function split() {}
+    }, {
+        key: 'insurance',
+        value: function insurance() {}
+    }, {
+        key: 'checkScore',
+        value: function checkScore() {}
+    }, {
+        key: 'changeBox',
+        value: function changeBox() {
+            var box = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.state.currentBox - 1;
+
+            if (!this.state.boxes.hasOwnProperty(box.toString())) {
+                this.finishGame();
+            } else if (this.state.boxes[box].bet) {
+                this.setState({ currentBox: box });
+            } else this.changeBox(box - 1);
+        }
+    }, {
+        key: 'finishGame',
+        value: function finishGame() {}
     }, {
         key: 'render',
         value: function render() {
             var boxes = [];
+
+            var Interface = this.state.betInterface == true ? _react2.default.createElement(_BetInterface2.default, { numberOfBoxes: this.props.numberOfBoxes, betSizes: this.betSizes, onChangeBets: this.bet, onDeal: this.deal }) : _react2.default.createElement(_BetInterface2.default, { onHit: this.hit, onStand: this.stand, onDouble: this.double, onSplit: this.split, currentPlayer: this.state.currentBox });
             for (var box in this.state.boxes) {
-                boxes.push(_react2.default.createElement(_Box2.default, { cards: box.cards, result: box.score, bet: box.bet }));
+                boxes.push(_react2.default.createElement(_Box2.default, { cards: this.state.boxes[box].cards, result: this.state.boxes[box].score, bet: this.state.boxes[box].bet, key: box }));
             }
             return _react2.default.createElement(
                 'div',
@@ -536,16 +730,19 @@ var Table = function (_React$Component) {
                     'p',
                     null,
                     'Balance: ',
-                    this.state.balance
+                    this.props.balance
                 ),
                 _react2.default.createElement(
-                    'button',
-                    { onClick: this.props.onNewGame },
-                    'New Game'
+                    'div',
+                    { className: 'dealer-block' },
+                    _react2.default.createElement(_Dealer2.default, { cards: this.state.dealer.cards, result: this.state.dealer.score })
                 ),
-                _react2.default.createElement(_Dealer2.default, { cards: this.state.dealer.cards, result: this.state.dealer.score }),
-                boxes,
-                _react2.default.createElement(_BetInterface2.default, { numberOfBoxes: this.props.numberOfBoxes, betSizes: this.betSizes, onChangeBets: this.bet, onDeal: this.deal })
+                _react2.default.createElement(
+                    'div',
+                    { className: 'boxes' },
+                    boxes
+                ),
+                Interface
             );
         }
     }]);
@@ -558,16 +755,18 @@ exports.default = Table;
 
 Table.propTypes = {
     numberOfBoxes: _react2.default.PropTypes.number,
-    deck: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.object),
-    balance: _react2.default.PropTypes.number
+    balance: _react2.default.PropTypes.number,
+    deckSource: _react2.default.PropTypes.string,
+    onUpdateBalance: _react2.default.PropTypes.func
 };
 Table.defaultProps = {
     numberOfBoxes: 3,
-    deck: [],
-    balance: 0
+    balance: 0,
+    deckSource: '/blackjack/deck',
+    onUpdateBalance: function onUpdateBalance(change) {}
 };
 
-},{"./BetInterface.jsx":2,"./Box.jsx":3,"./Dealer.jsx":5,"react":181}],9:[function(require,module,exports){
+},{"./BetInterface.jsx":2,"./Box.jsx":3,"./Dealer.jsx":5,"jquery":34,"react":181}],9:[function(require,module,exports){
 (function (process){
 'use strict';
 

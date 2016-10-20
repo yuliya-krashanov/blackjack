@@ -14,13 +14,17 @@ class BlackjackController extends Controller {
 
     public function index()
     {
-        //$decks = $this->blackjack->genericDecks();
-        return view('Blackjack::gameboard')/*->with('deck', $decks)*/;
+        return view('Blackjack::gameboard');
     }
 
-    public function getNewDeck(Request $request)
+    public function getNewDeck()
     {
-        exit(json_encode(['deck' => $this->blackjack->genericDecks(), 'balance' => $this->blackjack->getBalance()]));
+        exit(json_encode(['deck' => $this->blackjack->genericDecks()]));
+    }
+
+    public function getBalance()
+    {
+        exit(json_encode(['balance' => $this->blackjack->getBalance()]));
     }
 
 }

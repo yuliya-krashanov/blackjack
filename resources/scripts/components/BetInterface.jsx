@@ -5,12 +5,12 @@ export default class BetInterface extends React.Component {
         super(props);
     }
     render() {
-        const bets = this.props.betSizes.map((bet) => {
-            return (<option value={bet}>{bet}</option>)
+        const bets = this.props.betSizes.map((bet, i) => {
+            return (<option key={i} value={bet}>{bet}</option>)
         });
         let boxes = [];
         for (let i = 1; i <= this.props.numberOfBoxes; i++){
-            boxes.push(<option value={i}>{i}</option>)
+            boxes.push(<option key={i} value={i}>{i}</option>)
         }
         return (
             <div className="bet-block">
@@ -23,7 +23,6 @@ export default class BetInterface extends React.Component {
                     </select>
                     <button>Bet</button>
                 </form>
-
                 <button onClick={this.props.onDeal}>Deal</button>
             </div>
         );

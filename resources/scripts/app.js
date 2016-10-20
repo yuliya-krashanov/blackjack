@@ -5,6 +5,6 @@ import 'lodash';
 
 
 ReactDOM.render(
-    <Game source="/blackjack/deck"/>,
+    <Game balanceSource="/blackjack/balance"/>,
     document.getElementById('blackjack')
 );
