@@ -3,7 +3,7 @@ import $ from 'jquery';
 import Dealer from './Dealer.jsx'
 import Box from './Box.jsx'
 import BetInterface from './BetInterface.jsx'
-import PlayerInterface from './BetInterface.jsx'
+import PlayerInterface from './PlayerInterface.jsx'
 
 export default class Table extends React.Component {
     constructor(props){
@@ -13,7 +13,8 @@ export default class Table extends React.Component {
             boxes[i] =  {
                 bet: 0,
                 cards: [],
-                score: 0,
+                score: [],
+                split: false,
                 result: ''
             }
         }
@@ -25,7 +26,8 @@ export default class Table extends React.Component {
             boxes: boxes,
             dealer: {
                 cards: [],
-                score: 0
+                score: 0,
+                finish: false
             },
             betInterface: true
         };
@@ -39,6 +41,8 @@ export default class Table extends React.Component {
         this.double = this.double.bind(this);
         this.split = this.split.bind(this);
         this.insurance = this.insurance.bind(this);
+       /* this.countScore= this.countScore.bind(this);
+        this.checkScore = this.checkScore.bind(this);*/
     }
 
     componentDidMount(){
@@ -75,12 +79,15 @@ export default class Table extends React.Component {
         let dealer = this.state.dealer;
         for (let box in boxes) {
             if (boxes[box].bet > 0){
-                boxes[box].cards = boxes[box].cards.concat(this.dealCards(2))
+                boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
+                boxes[box].score = this.countScore(boxes[box].cards);
+                boxes[box].split = (boxes[box].cards[0].value == boxes[box].cards[1].value);
+                boxes[box].result = this.checkScore(boxes[box]);
             }
         }
         dealer.cards = dealer.cards.concat(this.dealCards(2));
-
         this.setState({ boxes: boxes, dealer: dealer, betInterface: false});
+        this.changeBox(this.props.numberOfBoxes);
     }
 
     dealCards(number) {
@@ -88,69 +95,132 @@ export default class Table extends React.Component {
         let hand = [];
 
         for ( number; number > 0; number--){
-            hand.push(deck.pop());
+            hand.push(deck.shift());
         }
         this.setState({deck: deck});
         return hand;
     }
 
     hit(){
-        this.state.boxes[this.state.currentBox].cards.push(dealCards(1));
+        let box = this.state.boxes[this.state.currentBox];
+        box.cards = box.cards.concat(this.dealCards(1));
+        box.score =  this.countScore(box.cards);
+        box.result = this.checkScore(box);
         this.setState({ boxes: this.state.boxes });
-        this.checkScore();
+        if (box.result !== '') this.changeBox();
     }
 
     stand(){
+        let box = this.state.boxes[this.state.currentBox];
+        if (box.score.length > 1) box.score.splice(0, box.score.length - 1);
         this.changeBox();
     }
 
     double(){
-        let boxes = this.state.boxes;
-        const current = this.state.currentBox;
-        boxes[current].bet *= 2;
-        boxes[current].cards.push(dealCards(1));
-        this.setState({ boxes: boxes });
+        let box = this.state.boxes[this.state.currentBox];
+        this.props.onUpdateBalance(-box.bet);
+        box.bet *= 2;
+        box.cards = box.cards.concat(this.dealCards(1));
+        box.score =  this.countScore(box.cards);
+        box.result = this.checkScore(box);
+        this.setState({ boxes: this.state.boxes });
         this.changeBox();
     }
 
     split(){
-
+        let box = this.state.boxes[this.state.currentBox];
+        const removedCard = box.cards.shift();
+        this.state.boxes.push({
+            bet: box.bet,
+            cards: [removedCard],
+            score: this.countScore([removedCard]),
+            split: false,
+            splited: true,
+            result: ''
+        })
     }
 
     insurance(){
 
     }
 
-    checkScore(){
-
+    countScore(cards){
+        let scoreSum = 0;
+        let aces = 0;
+        cards.forEach((card) => {
+            scoreSum += card.value;
+            aces += card.rank == 'A' ? 1 : 0;
+        });
+        let score = [];
+        if (aces){
+            if(scoreSum <= 21) score.push(scoreSum);
+            for (aces; aces > 0; aces--){
+                scoreSum -= 10;
+                if (scoreSum <= 21 || aces == 1)
+                    score.unshift(scoreSum);
+            }
+        } else score.push(scoreSum);
+        return score;
     }
 
-    changeBox (box = this.state.currentBox-1){
+    checkScore(box){
+        if (box.cards.length == 2 && box.score.includes(21) && !box.splited){
+            return "BJ";
+        } else if ( box.score.length < 2 && box.score[0] > 21){
+            return "BUST";
+        }
+        return '';
+    }
+
+    changeBox (box = this.state.currentBox-1) {
         if(!this.state.boxes.hasOwnProperty(box.toString())){
-            this.finishGame()
-        } else if (this.state.boxes[box].bet) {
+            this.finishGame();
+        } else if (this.state.boxes[box].bet && this.state.boxes[box].result == '') {
             this.setState({ currentBox: box});
         } else this.changeBox(box - 1);
     }
 
     finishGame(){
+        let boxes = this.state.boxes;
+        this.dealDealer();
+        this.state.dealer.finish = true;
+        this.setState({dealer: this.state.dealer});
+        this.gameResults();
+    }
 
+    gameResults(){
+        let boxes = this.state.boxes;
+        boxes.forEach((box, i) => {
+
+        });
+    }
+
+    dealDealer(){
+        let dealer = this.state.dealer;
+        dealer.score =  this.countScore(dealer.cards);
+        if (dealer.score[dealer.score.length - 1] < 17 || ( dealer.score[dealer.score.length - 1] > 17 && dealer.score[dealer.score.length - 1] < 21 && dealer.score.length > 1 ) ){
+            dealer.cards = dealer.cards.concat(this.dealCards(1));
+            this.setState({dealer: dealer});
+            this.dealDealer();
+        }else {
+            this.setState({dealer: dealer});
+        }
     }
 
     render() {
         let boxes = [];
-
+        const box = this.state.boxes[this.state.currentBox];
         const Interface = (this.state.betInterface == true) ?
             <BetInterface numberOfBoxes={this.props.numberOfBoxes} betSizes={this.betSizes} onChangeBets={this.bet} onDeal={this.deal} /> :
-            <PlayerInterface onHit={this.hit} onStand={this.stand} onDouble={this.double} onSplit={this.split} currentPlayer={this.state.currentBox} />;
+            <PlayerInterface onHit={this.hit} onStand={this.stand} onDouble={this.double} onSplit={this.split} currentBox={this.state.currentBox} split={box.split} />;
         for (let box in this.state.boxes){
-            boxes.push(<Box cards={this.state.boxes[box].cards} result={this.state.boxes[box].score} bet={this.state.boxes[box].bet} key={box} />);
+            boxes.push(<Box box={this.state.boxes[box]} key={box}  />);
         }
         return (
             <div className="table">
                 <p>Balance: {this.props.balance}</p>
                 <div className="dealer-block">
-                    <Dealer cards={this.state.dealer.cards} result={this.state.dealer.score} />
+                    <Dealer dealer={this.state.dealer} />
                 </div>
                 <div className="boxes">
                     {boxes}

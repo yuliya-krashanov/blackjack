@@ -158,9 +158,32 @@ var Box = function (_React$Component) {
     _createClass(Box, [{
         key: 'render',
         value: function render() {
-            var cards = this.props.cards.map(function (card) {
-                return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank, key: card.name });
+            var cards = this.props.box.cards.map(function (card, i) {
+                return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank, key: i });
             });
+            var score = this.props.box.score.reduce(function (res, current) {
+                if (res !== '') {
+                    return res + '/' + current;
+                } else {
+                    return current;
+                }
+            }, '');
+            var gameResults = cards.length ? _react2.default.createElement(
+                'div',
+                null,
+                _react2.default.createElement(
+                    'div',
+                    { className: 'score' },
+                    'Score:',
+                    score
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'result' },
+                    'Result: ',
+                    this.props.box.result
+                )
+            ) : null;
             return _react2.default.createElement(
                 'div',
                 { className: 'box' },
@@ -174,21 +197,12 @@ var Box = function (_React$Component) {
                     { className: 'cards' },
                     cards
                 ),
-                _react2.default.createElement(
-                    'div',
-                    { className: 'score' },
-                    this.props.score
-                ),
+                gameResults,
                 _react2.default.createElement(
                     'div',
                     { className: 'bet' },
                     'Bet: ',
-                    this.props.bet
-                ),
-                _react2.default.createElement(
-                    'div',
-                    { className: 'result' },
-                    this.props.result
+                    this.props.box.bet
                 )
             );
         }
@@ -201,14 +215,10 @@ exports.default = Box;
 
 
 Box.propTypes = {
-    cards: _react2.default.PropTypes.array,
-    result: _react2.default.PropTypes.number,
-    bet: _react2.default.PropTypes.number
+    box: _react2.default.PropTypes.object
 };
 Box.defaultProps = {
-    cards: [],
-    result: 0,
-    bet: 0
+    box: {}
 };
 
 },{"./Card.jsx":4,"./PlayerInterface.jsx":7,"react":181}],4:[function(require,module,exports){
@@ -312,7 +322,12 @@ var Dealer = function (_React$Component) {
     _createClass(Dealer, [{
         key: 'render',
         value: function render() {
-            var cards = this.props.cards.map(function (card, i) {
+            var _this2 = this;
+
+            var cards = this.props.dealer.cards.map(function (card, i) {
+                if (i == 1 && !_this2.props.dealer.finish) {
+                    return '?';
+                }
                 return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank, key: i });
             });
             return _react2.default.createElement(
@@ -331,7 +346,8 @@ var Dealer = function (_React$Component) {
                 _react2.default.createElement(
                     'div',
                     { className: 'score' },
-                    this.props.score || ''
+                    'Score: ',
+                    this.props.dealer.score || ''
                 )
             );
         }
@@ -344,12 +360,11 @@ exports.default = Dealer;
 
 
 Dealer.propTypes = {
-    cards: _react2.default.PropTypes.array,
-    result: _react2.default.PropTypes.number
+    dealer: _react2.default.PropTypes.object
 };
+
 Dealer.defaultProps = {
-    cards: [],
-    result: 0
+    dealer: {}
 };
 
 },{"./Card.jsx":4,"react":181}],6:[function(require,module,exports){
@@ -483,6 +498,8 @@ var PlayerInterface = function (_React$Component) {
     _createClass(PlayerInterface, [{
         key: "render",
         value: function render() {
+            var _this2 = this;
+
             return _react2.default.createElement(
                 "div",
                 { className: "play" },
@@ -496,24 +513,26 @@ var PlayerInterface = function (_React$Component) {
                     { className: "buttons" },
                     _react2.default.createElement(
                         "button",
-                        { onClick: this.props.hit },
+                        { onClick: this.props.onHit },
                         "Hit"
                     ),
                     _react2.default.createElement(
                         "button",
-                        { onClick: this.props.stand },
+                        { onClick: this.props.onStand },
                         "Stand"
                     ),
                     _react2.default.createElement(
                         "button",
-                        { onClick: this.props.double },
-                        "Hit"
+                        { onClick: this.props.onDouble },
+                        "Double"
                     ),
-                    _react2.default.createElement(
-                        "button",
-                        { onClick: this.props.split },
-                        "Split"
-                    )
+                    function () {
+                        if (_this2.props.split) return _react2.default.createElement(
+                            "button",
+                            { onClick: _this2.props.onSplit },
+                            "Split"
+                        );
+                    }()
                 )
             );
         }
@@ -527,9 +546,6 @@ exports.default = PlayerInterface;
 
 PlayerInterface.propTypes = {
     currentBox: _react2.default.PropTypes.number
-};
-PlayerInterface.defaultProps = {
-    currentBox: 3
 };
 
 },{"react":181}],8:[function(require,module,exports){
@@ -561,6 +577,10 @@ var _BetInterface = require('./BetInterface.jsx');
 
 var _BetInterface2 = _interopRequireDefault(_BetInterface);
 
+var _PlayerInterface = require('./PlayerInterface.jsx');
+
+var _PlayerInterface2 = _interopRequireDefault(_PlayerInterface);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -582,7 +602,8 @@ var Table = function (_React$Component) {
             boxes[i] = {
                 bet: 0,
                 cards: [],
-                score: 0,
+                score: [],
+                split: false,
                 result: ''
             };
         }
@@ -594,7 +615,8 @@ var Table = function (_React$Component) {
             boxes: boxes,
             dealer: {
                 cards: [],
-                score: 0
+                score: 0,
+                finish: false
             },
             betInterface: true
         };
@@ -608,6 +630,8 @@ var Table = function (_React$Component) {
         _this.double = _this.double.bind(_this);
         _this.split = _this.split.bind(_this);
         _this.insurance = _this.insurance.bind(_this);
+        /* this.countScore= this.countScore.bind(this);
+         this.checkScore = this.checkScore.bind(this);*/
         return _this;
     }
 
@@ -651,11 +675,14 @@ var Table = function (_React$Component) {
             for (var box in boxes) {
                 if (boxes[box].bet > 0) {
                     boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
+                    boxes[box].score = this.countScore(boxes[box].cards);
+                    boxes[box].split = boxes[box].cards[0].value == boxes[box].cards[1].value;
+                    boxes[box].result = this.checkScore(boxes[box]);
                 }
             }
             dealer.cards = dealer.cards.concat(this.dealCards(2));
-
             this.setState({ boxes: boxes, dealer: dealer, betInterface: false });
+            this.changeBox(this.props.numberOfBoxes);
         }
     }, {
         key: 'dealCards',
@@ -664,7 +691,7 @@ var Table = function (_React$Component) {
             var hand = [];
 
             for (number; number > 0; number--) {
-                hand.push(deck.pop());
+                hand.push(deck.shift());
             }
             this.setState({ deck: deck });
             return hand;
@@ -672,34 +699,78 @@ var Table = function (_React$Component) {
     }, {
         key: 'hit',
         value: function hit() {
-            this.state.boxes[this.state.currentBox].cards.push(dealCards(1));
+            var box = this.state.boxes[this.state.currentBox];
+            box.cards = box.cards.concat(this.dealCards(1));
+            box.score = this.countScore(box.cards);
+            box.result = this.checkScore(box);
             this.setState({ boxes: this.state.boxes });
-            this.checkScore();
+            if (box.result !== '') this.changeBox();
         }
     }, {
         key: 'stand',
         value: function stand() {
+            var box = this.state.boxes[this.state.currentBox];
+            if (box.score.length > 1) box.score.splice(0, box.score.length - 1);
             this.changeBox();
         }
     }, {
         key: 'double',
         value: function double() {
-            var boxes = this.state.boxes;
-            var current = this.state.currentBox;
-            boxes[current].bet *= 2;
-            boxes[current].cards.push(dealCards(1));
-            this.setState({ boxes: boxes });
+            var box = this.state.boxes[this.state.currentBox];
+            this.props.onUpdateBalance(-box.bet);
+            box.bet *= 2;
+            box.cards = box.cards.concat(this.dealCards(1));
+            box.score = this.countScore(box.cards);
+            box.result = this.checkScore(box);
+            this.setState({ boxes: this.state.boxes });
             this.changeBox();
         }
     }, {
         key: 'split',
-        value: function split() {}
+        value: function split() {
+            var box = this.state.boxes[this.state.currentBox];
+            var removedCard = box.cards.shift();
+            this.state.boxes.push({
+                bet: box.bet,
+                cards: [removedCard],
+                score: this.countScore([removedCard]),
+                split: false,
+                splited: true,
+                result: ''
+            });
+        }
     }, {
         key: 'insurance',
         value: function insurance() {}
     }, {
+        key: 'countScore',
+        value: function countScore(cards) {
+            var scoreSum = 0;
+            var aces = 0;
+            cards.forEach(function (card) {
+                scoreSum += card.value;
+                aces += card.rank == 'A' ? 1 : 0;
+            });
+            var score = [];
+            if (aces) {
+                if (scoreSum <= 21) score.push(scoreSum);
+                for (aces; aces > 0; aces--) {
+                    scoreSum -= 10;
+                    if (scoreSum <= 21 || aces == 1) score.unshift(scoreSum);
+                }
+            } else score.push(scoreSum);
+            return score;
+        }
+    }, {
         key: 'checkScore',
-        value: function checkScore() {}
+        value: function checkScore(box) {
+            if (box.cards.length == 2 && box.score.includes(21) && !box.splited) {
+                return "BJ";
+            } else if (box.score.length < 2 && box.score[0] > 21) {
+                return "BUST";
+            }
+            return '';
+        }
     }, {
         key: 'changeBox',
         value: function changeBox() {
@@ -707,21 +778,46 @@ var Table = function (_React$Component) {
 
             if (!this.state.boxes.hasOwnProperty(box.toString())) {
                 this.finishGame();
-            } else if (this.state.boxes[box].bet) {
+            } else if (this.state.boxes[box].bet && this.state.boxes[box].result == '') {
                 this.setState({ currentBox: box });
             } else this.changeBox(box - 1);
         }
     }, {
         key: 'finishGame',
-        value: function finishGame() {}
+        value: function finishGame() {
+            var boxes = this.state.boxes;
+            this.dealDealer();
+            this.state.dealer.finish = true;
+            this.setState({ dealer: this.state.dealer });
+            this.gameResults();
+        }
+    }, {
+        key: 'gameResults',
+        value: function gameResults() {
+            var boxes = this.state.boxes;
+            boxes.forEach(function (box, i) {});
+        }
+    }, {
+        key: 'dealDealer',
+        value: function dealDealer() {
+            var dealer = this.state.dealer;
+            dealer.score = this.countScore(dealer.cards);
+            if (dealer.score[dealer.score.length - 1] < 17 || dealer.score[dealer.score.length - 1] > 17 && dealer.score[dealer.score.length - 1] < 21 && dealer.score.length > 1) {
+                dealer.cards = dealer.cards.concat(this.dealCards(1));
+                this.setState({ dealer: dealer });
+                this.dealDealer();
+            } else {
+                this.setState({ dealer: dealer });
+            }
+        }
     }, {
         key: 'render',
         value: function render() {
             var boxes = [];
-
-            var Interface = this.state.betInterface == true ? _react2.default.createElement(_BetInterface2.default, { numberOfBoxes: this.props.numberOfBoxes, betSizes: this.betSizes, onChangeBets: this.bet, onDeal: this.deal }) : _react2.default.createElement(_BetInterface2.default, { onHit: this.hit, onStand: this.stand, onDouble: this.double, onSplit: this.split, currentPlayer: this.state.currentBox });
-            for (var box in this.state.boxes) {
-                boxes.push(_react2.default.createElement(_Box2.default, { cards: this.state.boxes[box].cards, result: this.state.boxes[box].score, bet: this.state.boxes[box].bet, key: box }));
+            var box = this.state.boxes[this.state.currentBox];
+            var Interface = this.state.betInterface == true ? _react2.default.createElement(_BetInterface2.default, { numberOfBoxes: this.props.numberOfBoxes, betSizes: this.betSizes, onChangeBets: this.bet, onDeal: this.deal }) : _react2.default.createElement(_PlayerInterface2.default, { onHit: this.hit, onStand: this.stand, onDouble: this.double, onSplit: this.split, currentBox: this.state.currentBox, split: box.split });
+            for (var _box in this.state.boxes) {
+                boxes.push(_react2.default.createElement(_Box2.default, { box: this.state.boxes[_box], key: _box }));
             }
             return _react2.default.createElement(
                 'div',
@@ -735,7 +831,7 @@ var Table = function (_React$Component) {
                 _react2.default.createElement(
                     'div',
                     { className: 'dealer-block' },
-                    _react2.default.createElement(_Dealer2.default, { cards: this.state.dealer.cards, result: this.state.dealer.score })
+                    _react2.default.createElement(_Dealer2.default, { dealer: this.state.dealer })
                 ),
                 _react2.default.createElement(
                     'div',
@@ -766,7 +862,7 @@ Table.defaultProps = {
     onUpdateBalance: function onUpdateBalance(change) {}
 };
 
-},{"./BetInterface.jsx":2,"./Box.jsx":3,"./Dealer.jsx":5,"jquery":34,"react":181}],9:[function(require,module,exports){
+},{"./BetInterface.jsx":2,"./Box.jsx":3,"./Dealer.jsx":5,"./PlayerInterface.jsx":7,"jquery":34,"react":181}],9:[function(require,module,exports){
 (function (process){
 'use strict';
 

@@ -7,30 +7,33 @@ export default class Box extends React.Component {
         super(props)
     }
     render(){
-        let cards = this.props.cards.map((card) => {
-            return (<Card value={card.value} name={card.name} rank={card.rank} key={card.name} />);
+        let cards = this.props.box.cards.map((card, i) => {
+            return (<Card value={card.value} name={card.name} rank={card.rank} key={i} />);
         });
+        let score = this.props.box.score.reduce(function(res, current){
+            if(res !== ''){
+                return res + '/' + current;
+            } else {
+                return current;
+            }
+        }, '');
+        const gameResults = (cards.length) ? <div><div className="score">Score:{score}</div><div className="result">Result: {this.props.box.result}</div></div>  : null;
         return (
             <div className="box">
                 <label>Cards:</label>
                 <div className="cards">
                     {cards}
                 </div>
-                <div className="score">{this.props.score}</div>
-                <div className="bet">Bet: {this.props.bet}</div>
-                <div className="result">{this.props.result}</div>
+                {gameResults}
+                <div className="bet">Bet: {this.props.box.bet}</div>
             </div>
         );
     }
 }
 
 Box.propTypes = {
-    cards: React.PropTypes.array,
-    result: React.PropTypes.number,
-    bet: React.PropTypes.number
+   box: React.PropTypes.object
 };
 Box.defaultProps = {
-    cards: [],
-    result: 0,
-    bet: 0
+   box: {}
 };

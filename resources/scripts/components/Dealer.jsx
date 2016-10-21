@@ -8,7 +8,8 @@ export default class Dealer extends React.Component {
     }
 
     render() {
-        let cards = this.props.cards.map((card, i) => {
+        let cards = this.props.dealer.cards.map((card, i) => {
+            if (i == 1 && !this.props.dealer.finish) { return '?' }
             return (<Card value={card.value} name={card.name} rank={card.rank} key={i}  />);
         });
         return (
@@ -17,17 +18,16 @@ export default class Dealer extends React.Component {
                 <div className="cards" id="dealer-cards">
                     {cards}
                 </div>
-                <div className="score">{this.props.score || ''}</div>
+                <div className="score">Score: {this.props.dealer.score || ''}</div>
             </div>
         );
     }
 }
 
 Dealer.propTypes = {
-    cards: React.PropTypes.array,
-    result: React.PropTypes.number
+    dealer: React.PropTypes.object
 };
+
 Dealer.defaultProps = {
-    cards: [],
-    result: 0
+    dealer: {}
 };

@@ -9,10 +9,13 @@ export default class PlayerInterface extends React.Component {
             <div className="play">
                 <p className="current">{this.props.currentBox}</p>
                 <div className="buttons">
-                    <button onClick={this.props.hit}>Hit</button>
-                    <button onClick={this.props.stand}>Stand</button>
-                    <button onClick={this.props.double}>Hit</button>
-                    <button onClick={this.props.split}>Split</button>
+                    <button onClick={this.props.onHit}>Hit</button>
+                    <button onClick={this.props.onStand}>Stand</button>
+                    <button onClick={this.props.onDouble}>Double</button>
+                    {(() => {
+                        if (this.props.split)
+                            return (<button onClick={this.props.onSplit}>Split</button>);
+                    })()}
                 </div>
             </div>
         );
@@ -21,7 +24,4 @@ export default class PlayerInterface extends React.Component {
 
 PlayerInterface.propTypes = {
     currentBox: React.PropTypes.number,
-};
-PlayerInterface.defaultProps = {
-    currentBox: 3
 };
