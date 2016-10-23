@@ -9,9 +9,10 @@ export default class Dealer extends React.Component {
 
     render() {
         let cards = this.props.dealer.cards.map((card, i) => {
-            if (i == 1 && !this.props.dealer.finish) { return '?' }
+            if (i == 1 && (this.props.gameStatus !== 'finish' && !this.props.insurance )) { return '?' }
             return (<Card value={card.value} name={card.name} rank={card.rank} key={i}  />);
         });
+
         return (
             <div className="dealer">
                 <label htmlFor="dealer-cards">Dealer:</label>

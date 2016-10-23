@@ -11,7 +11,10 @@ export default class PlayerInterface extends React.Component {
                 <div className="buttons">
                     <button onClick={this.props.onHit}>Hit</button>
                     <button onClick={this.props.onStand}>Stand</button>
-                    <button onClick={this.props.onDouble}>Double</button>
+                    {(() => {
+                        if (this.props.double)
+                            return (<button onClick={this.props.onDouble}>Double</button>);
+                    })()}                  
                     {(() => {
                         if (this.props.split)
                             return (<button onClick={this.props.onSplit}>Split</button>);

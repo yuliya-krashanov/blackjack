@@ -29,14 +29,12 @@ export default class BetInterface extends React.Component {
     }
 }
 
-
 BetInterface.propTypes = {
     numberOfBoxes: React.PropTypes.number,
-    deck: React.PropTypes.arrayOf(React.PropTypes.number),
-    onChangeBets: React.PropTypes.func
+    betSizes: React.PropTypes.arrayOf(React.PropTypes.number),
+    onDeal: React.PropTypes.func
 };
 BetInterface.defaultProps = {
     numberOfBoxes: 3,
-    betSizes: [5, 25, 100, 200, 500],
-    onChangeBets: (e) => {e.preventDefault()}
+    betSizes: [5, 25, 100, 200, 500]
 };

@@ -4,6 +4,8 @@ import Dealer from './Dealer.jsx'
 import Box from './Box.jsx'
 import BetInterface from './BetInterface.jsx'
 import PlayerInterface from './PlayerInterface.jsx'
+import FinishInterface from './FinishInterface.jsx'
+import InsuranceInterface from './InsuranceInterface.jsx'
 
 export default class Table extends React.Component {
     constructor(props){
@@ -15,7 +17,9 @@ export default class Table extends React.Component {
                 cards: [],
                 score: [],
                 split: false,
-                result: ''
+                double: false,
+                result: '',
+                win: 0
             }
         }
 
@@ -29,7 +33,8 @@ export default class Table extends React.Component {
                 score: 0,
                 finish: false
             },
-            betInterface: true
+            gameStatus: 'bet',
+            insurance: false
         };
 
         this.bet = this.bet.bind(this);
@@ -41,8 +46,9 @@ export default class Table extends React.Component {
         this.double = this.double.bind(this);
         this.split = this.split.bind(this);
         this.insurance = this.insurance.bind(this);
-       /* this.countScore= this.countScore.bind(this);
-        this.checkScore = this.checkScore.bind(this);*/
+        this.rebet = this.rebet.bind(this);
+        this.newGame = this.newGame.bind(this);
+        this.changeBox = this.changeBox.bind(this);
     }
 
     componentDidMount(){
@@ -77,16 +83,27 @@ export default class Table extends React.Component {
     deal(){
         let boxes = this.state.boxes;
         let dealer = this.state.dealer;
+        let noBet = true;
         for (let box in boxes) {
             if (boxes[box].bet > 0){
+                noBet = false;
                 boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
                 boxes[box].score = this.countScore(boxes[box].cards);
-                boxes[box].split = (boxes[box].cards[0].value == boxes[box].cards[1].value);
+                boxes[box].split = ( boxes[box].cards[0].value == boxes[box].cards[1].value );
+                boxes[box].double = ( boxes[box].score.includes(10) || boxes[box].score.includes(11) );
                 boxes[box].result = this.checkScore(boxes[box]);
             }
         }
-        dealer.cards = dealer.cards.concat(this.dealCards(2));
-        this.setState({ boxes: boxes, dealer: dealer, betInterface: false});
+        if (noBet){
+            alert('No bets!'); return;
+        }
+        dealer.cards.push({rank: 'A', value: 11, name: 'AH'});
+        dealer.cards = dealer.cards.concat(this.dealCards(1));
+        if (dealer.cards[0].value == 11) {
+            this.setState({ boxes: boxes, dealer: dealer, gameStatus: 'insurance'});
+        }else{
+            this.setState({ boxes: boxes, dealer: dealer, gameStatus: 'play'});
+        }
         this.changeBox(this.props.numberOfBoxes);
     }
 
@@ -141,7 +158,68 @@ export default class Table extends React.Component {
     }
 
     insurance(){
+        let box = this.state.boxes[this.state.currentBox];
+        box.insurance = box.bet / 2;
+        this.props.onUpdateBalance(-box.insurance);
+        this.setState({ boxes: this.state.boxes });
+        this.changeBox();
+    }
 
+    openDealerCard(){
+        this.setState({insurance: true, gameStatus: 'play'});
+        if (this.state.dealer.cards[1].value == 10){
+            this.setState({ gameStatus: 'finish'});
+            this.gameResults();
+        }
+    }
+
+    newGame(){
+        let boxes = {};
+        for (let i = 1; i <= this.props.numberOfBoxes; i++) {
+            boxes[i] =  {
+                bet: 0,
+                cards: [],
+                score: [],
+                split: false,
+                result: '',
+                win: 0
+            }
+        }
+        this.setState({
+            boxes: boxes,
+            dealer: {
+                cards: [],
+                score: 0,
+                finish: false
+            },
+            gameStatus: 'bet'
+        });
+        this.deck();
+    }
+
+    rebet(){
+        let boxes = {};
+        for (let i = 1; i <= this.props.numberOfBoxes; i++) {
+            this.props.onUpdateBalance(-this.state.boxes[i].bet);
+            boxes[i] =  {
+                bet: this.state.boxes[i].bet,
+                cards: [],
+                score: [],
+                split: false,
+                result: '',
+                win: 0
+            }
+        }
+        this.setState({
+            boxes: boxes,
+            dealer: {
+                cards: [],
+                score: 0,
+                finish: false
+            },
+            gameStatus: 'bet'
+        });
+        this.deck();
     }
 
     countScore(cards){
@@ -174,25 +252,54 @@ export default class Table extends React.Component {
 
     changeBox (box = this.state.currentBox-1) {
         if(!this.state.boxes.hasOwnProperty(box.toString())){
-            this.finishGame();
+            if(this.state.gameStatus == 'play')
+                this.finishGame();
+            else if(this.state.gameStatus == 'insurance')
+                this.openDealerCard();
         } else if (this.state.boxes[box].bet && this.state.boxes[box].result == '') {
             this.setState({ currentBox: box});
         } else this.changeBox(box - 1);
     }
 
     finishGame(){
-        let boxes = this.state.boxes;
         this.dealDealer();
-        this.state.dealer.finish = true;
-        this.setState({dealer: this.state.dealer});
+        this.setState({ gameStatus: 'finish'});
         this.gameResults();
     }
 
     gameResults(){
         let boxes = this.state.boxes;
-        boxes.forEach((box, i) => {
+        let dealerScore = this.state.dealer.score;
+        let totalWin = 0;
+        for(let box in boxes){
+            if (boxes[box].result == '' && boxes.hasOwnProperty(box)){
+                if (dealerScore > 21){
+                    boxes[box].result = 'WIN';
+                }else{
+                    if (dealerScore == 21 && this.state.dealer.cards.length == 2) boxes[box].result = 'NO WIN';
+                    else if (boxes[box].score > dealerScore) boxes[box].result = 'WIN';
+                    else if (boxes[box].score < dealerScore) boxes[box].result = 'NO WIN';
+                    else boxes[box].result = 'PUSH';
+                }
+            }
+            switch (boxes[box].result){
+                case 'WIN':
+                    boxes[box].win = boxes[box].bet * 2;
+                    break;
+                case 'PUSH':
+                    boxes[box].win = boxes[box].bet;
+                    break;
+                case 'BJ':
+                    boxes[box].win = boxes[box].bet * 2.5;
+                    break;
+                default:
+                    break;
+            }
+            totalWin += boxes[box].win;
+        }
 
-        });
+        this.props.onUpdateBalance(totalWin);
+        this.setState({boxes: boxes});
     }
 
     dealDealer(){
@@ -204,15 +311,30 @@ export default class Table extends React.Component {
             this.dealDealer();
         }else {
             this.setState({dealer: dealer});
+            this.gameResults();
         }
     }
 
     render() {
-        let boxes = [];
+        let boxes = [], Interface;
         const box = this.state.boxes[this.state.currentBox];
-        const Interface = (this.state.betInterface == true) ?
-            <BetInterface numberOfBoxes={this.props.numberOfBoxes} betSizes={this.betSizes} onChangeBets={this.bet} onDeal={this.deal} /> :
-            <PlayerInterface onHit={this.hit} onStand={this.stand} onDouble={this.double} onSplit={this.split} currentBox={this.state.currentBox} split={box.split} />;
+        switch (this.state.gameStatus) {
+            case 'bet':
+                Interface = <BetInterface numberOfBoxes={this.props.numberOfBoxes} betSizes={this.betSizes} onChangeBets={this.bet} onDeal={this.deal} />;
+                break;
+            case 'insurance':
+                Interface = <InsuranceInterface currentBox={this.state.currentBox} onInsurance={this.insurance} onContinue={this.changeBox} />;
+                break;
+            case 'play':
+                Interface = <PlayerInterface double={box.double} onHit={this.hit} onStand={this.stand} onDouble={this.double} onSplit={this.split} currentBox={this.state.currentBox} split={box.split} />;
+                break;
+            case 'finish':
+                Interface = <FinishInterface onRebet={this.rebet} onNewGame={this.newGame} />;
+                break;
+            default:
+                break;
+        }
+
         for (let box in this.state.boxes){
             boxes.push(<Box box={this.state.boxes[box]} key={box}  />);
         }
@@ -220,7 +342,7 @@ export default class Table extends React.Component {
             <div className="table">
                 <p>Balance: {this.props.balance}</p>
                 <div className="dealer-block">
-                    <Dealer dealer={this.state.dealer} />
+                    <Dealer dealer={this.state.dealer} insurance={this.state.insurance} gameStatus={this.state.gameStatus} />
                 </div>
                 <div className="boxes">
                     {boxes}
@@ -235,7 +357,7 @@ Table.propTypes = {
     numberOfBoxes: React.PropTypes.number,
     balance: React.PropTypes.number,
     deckSource: React.PropTypes.string,
-    onUpdateBalance: React.PropTypes.func,
+    onUpdateBalance: React.PropTypes.func
 };
 Table.defaultProps = {
     numberOfBoxes: 3,

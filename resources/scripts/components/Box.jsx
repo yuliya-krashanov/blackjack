@@ -1,6 +1,5 @@
 import React from 'react'
 import Card from './Card.jsx';
-import PlayerInterface from './PlayerInterface.jsx';
 
 export default class Box extends React.Component {
     constructor(props){
@@ -17,7 +16,16 @@ export default class Box extends React.Component {
                 return current;
             }
         }, '');
-        const gameResults = (cards.length) ? <div><div className="score">Score:{score}</div><div className="result">Result: {this.props.box.result}</div></div>  : null;
+        const gameResults = (cards.length) ?
+            <div>
+                {(() => {
+                    if (this.props.box.insurance)
+                        return ( <div className="insurance">Insurance:{this.props.box.insurance}</div>);
+                })()}
+                <div className="score">Score: {score}</div>
+                <div className="result">Result: {this.props.box.result}</div>
+                <div className="win">Win: {this.props.box.win}</div>
+            </div> : null;
         return (
             <div className="box">
                 <label>Cards:</label>
