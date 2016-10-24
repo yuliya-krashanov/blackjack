@@ -2,15 +2,16 @@ import React from 'react'
 import Card from './Card.jsx';
 
 export default class Box extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props)
     }
-    render(){
+
+    render() {
         let cards = this.props.box.cards.map((card, i) => {
-            return (<Card value={card.value} name={card.name} rank={card.rank} key={i} />);
+            return (<Card value={card.value} name={card.name} rank={card.rank} key={i}/>);
         });
-        let score = this.props.box.score.reduce(function(res, current){
-            if(res !== ''){
+        let score = this.props.box.score.reduce(function (res, current) {
+            if (res !== '') {
                 return res + '/' + current;
             } else {
                 return current;
@@ -36,12 +37,6 @@ export default class Box extends React.Component {
                 <div className="bet">Bet: {this.props.box.bet}</div>
             </div>
         );
+
     }
 }
-
-Box.propTypes = {
-   box: React.PropTypes.object
-};
-Box.defaultProps = {
-   box: {}
-};

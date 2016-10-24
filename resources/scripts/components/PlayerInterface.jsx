@@ -7,12 +7,12 @@ export default class PlayerInterface extends React.Component {
     render(){
         return (
             <div className="play">
-                <p className="current">{this.props.currentBox}</p>
+                <p className="current" style={{textAlign: 'center'}}>Playing BOX: <b>{this.props.currentBox}</b></p>
                 <div className="buttons">
                     <button onClick={this.props.onHit}>Hit</button>
                     <button onClick={this.props.onStand}>Stand</button>
                     {(() => {
-                        if (this.props.double)
+                        if (this.props.double && !this.props.alreadyDouble)
                             return (<button onClick={this.props.onDouble}>Double</button>);
                     })()}                  
                     {(() => {
