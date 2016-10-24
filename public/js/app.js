@@ -222,14 +222,6 @@ var Box = function (_React$Component) {
 
 exports.default = Box;
 
-
-Box.propTypes = {
-    box: _react2.default.PropTypes.object
-};
-Box.defaultProps = {
-    box: {}
-};
-
 },{"./Card.jsx":4,"react":183}],4:[function(require,module,exports){
 'use strict';
 
@@ -334,11 +326,18 @@ var Dealer = function (_React$Component) {
             var _this2 = this;
 
             var cards = this.props.dealer.cards.map(function (card, i) {
-                if (i == 1 && _this2.props.gameStatus !== 'finish' && !_this2.props.insurance) {
+                if (i == 1 && _this2.props.gameStatus !== 'finish' && !_this2.props.openCard) {
                     return '?';
                 }
                 return _react2.default.createElement(_Card2.default, { value: card.value, name: card.name, rank: card.rank, key: i });
             });
+            var score = this.props.dealer.score.reduce(function (res, current) {
+                if (res !== '') {
+                    return res + '/' + current;
+                } else {
+                    return current;
+                }
+            }, '');
 
             return _react2.default.createElement(
                 'div',
@@ -357,7 +356,7 @@ var Dealer = function (_React$Component) {
                     'div',
                     { className: 'score' },
                     'Score: ',
-                    this.props.dealer.score || ''
+                    score
                 )
             );
         }
@@ -563,10 +562,18 @@ var InsuranceInterface = function (_React$Component) {
     function InsuranceInterface(props) {
         _classCallCheck(this, InsuranceInterface);
 
-        return _possibleConstructorReturn(this, (InsuranceInterface.__proto__ || Object.getPrototypeOf(InsuranceInterface)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (InsuranceInterface.__proto__ || Object.getPrototypeOf(InsuranceInterface)).call(this, props));
+
+        _this.onContinue = _this.onContinue.bind(_this);
+        return _this;
     }
 
     _createClass(InsuranceInterface, [{
+        key: "onContinue",
+        value: function onContinue() {
+            this.props.onContinue();
+        }
+    }, {
         key: "render",
         value: function render() {
             return _react2.default.createElement(
@@ -581,7 +588,7 @@ var InsuranceInterface = function (_React$Component) {
                 ),
                 _react2.default.createElement(
                     "button",
-                    { onClick: this.props.onContinue },
+                    { onClick: this.onContinue },
                     "Continue"
                 )
             );
@@ -633,8 +640,13 @@ var PlayerInterface = function (_React$Component) {
                 { className: "play" },
                 _react2.default.createElement(
                     "p",
-                    { className: "current" },
-                    this.props.currentBox
+                    { className: "current", style: { textAlign: 'center' } },
+                    "Playing BOX: ",
+                    _react2.default.createElement(
+                        "b",
+                        null,
+                        this.props.currentBox
+                    )
                 ),
                 _react2.default.createElement(
                     "div",
@@ -650,7 +662,7 @@ var PlayerInterface = function (_React$Component) {
                         "Stand"
                     ),
                     function () {
-                        if (_this2.props.double) return _react2.default.createElement(
+                        if (_this2.props.double && !_this2.props.alreadyDouble) return _react2.default.createElement(
                             "button",
                             { onClick: _this2.props.onDouble },
                             "Double"
@@ -738,12 +750,13 @@ var Table = function (_React$Component) {
         var boxes = {};
         for (var i = 1; i <= _this.props.numberOfBoxes; i++) {
             boxes[i] = {
-                bet: 0,
+                bet: 5,
                 cards: [],
                 score: [],
                 split: false,
                 double: false,
                 result: '',
+                insurance: 0,
                 win: 0
             };
         }
@@ -755,11 +768,13 @@ var Table = function (_React$Component) {
             boxes: boxes,
             dealer: {
                 cards: [],
-                score: 0,
+                score: [],
                 finish: false
             },
             gameStatus: 'bet',
-            insurance: false
+            openCard: false,
+            insurance: false,
+            alreadyDouble: false
         };
 
         _this.bet = _this.bet.bind(_this);
@@ -818,18 +833,19 @@ var Table = function (_React$Component) {
             for (var box in boxes) {
                 if (boxes[box].bet > 0) {
                     noBet = false;
-                    boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
+                    if (box == 2) boxes[box].cards = boxes[box].cards.concat([{ rank: 'Q', value: 10, name: 'QH' }, { rank: 'J', value: 10, name: 'JC' }]);else boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
                     boxes[box].score = this.countScore(boxes[box].cards);
                     boxes[box].split = boxes[box].cards[0].value == boxes[box].cards[1].value;
-                    boxes[box].double = boxes[box].score.includes(10) || boxes[box].score.includes(11);
+                    boxes[box].double = (boxes[box].score.includes(10) || boxes[box].score.includes(11)) && boxes[box].cards.length == 2;
                     boxes[box].result = this.checkScore(boxes[box]);
                 }
             }
             if (noBet) {
                 alert('No bets!');return;
             }
-            dealer.cards.push({ rank: 'A', value: 11, name: 'AH' });
-            dealer.cards = dealer.cards.concat(this.dealCards(1));
+            //dealer.cards.push({rank: 'A', value: 11, name: 'AH'});
+            dealer.cards = dealer.cards.concat(this.dealCards(2));
+            dealer.score = this.countScore([dealer.cards[0]]);
             if (dealer.cards[0].value == 11) {
                 this.setState({ boxes: boxes, dealer: dealer, gameStatus: 'insurance' });
             } else {
@@ -858,61 +874,107 @@ var Table = function (_React$Component) {
             box.result = this.checkScore(box);
             this.setState({ boxes: this.state.boxes });
             if (box.result !== '') this.changeBox();
+            // if (box.splited && box.cards[0].value == 11) this.stand();
         }
     }, {
         key: 'stand',
         value: function stand() {
+            var _this3 = this;
+
             var box = this.state.boxes[this.state.currentBox];
             if (box.score.length > 1) box.score.splice(0, box.score.length - 1);
-            this.changeBox();
+            this.setState({ boxes: this.state.boxes }, function () {
+                return _this3.changeBox();
+            });
         }
     }, {
         key: 'double',
         value: function double() {
+            var _this4 = this;
+
             var box = this.state.boxes[this.state.currentBox];
             this.props.onUpdateBalance(-box.bet);
             box.bet *= 2;
             box.cards = box.cards.concat(this.dealCards(1));
             box.score = this.countScore(box.cards);
             box.result = this.checkScore(box);
-            this.setState({ boxes: this.state.boxes });
-            this.changeBox();
+            this.setState({ boxes: this.state.boxes, alreadyDouble: true }, function () {
+                return _this4.stand();
+            });
         }
     }, {
         key: 'split',
         value: function split() {
             var box = this.state.boxes[this.state.currentBox];
-            var removedCard = box.cards.shift();
-            this.state.boxes.push({
+            this.props.onUpdateBalance(-box.bet);
+            var isAces = box.cards[0].value == 11;
+            var firstBoxCards = [box.cards[0]].concat(this.dealCards(1));
+            var secondBoxCards = [box.cards[1]].concat(this.dealCards(1));
+            var firstBoxScore = this.countScore(firstBoxCards);
+            var secondBoxScore = this.countScore(secondBoxCards);
+            var boxes = this.state.boxes;
+
+            boxes[this.state.currentBox] = {
                 bet: box.bet,
-                cards: [removedCard],
-                score: this.countScore([removedCard]),
-                split: false,
+                cards: firstBoxCards,
+                score: firstBoxScore,
+                split: firstBoxCards[0].value == firstBoxCards[1].value,
+                double: (firstBoxScore.includes(10) || firstBoxScore.includes(11)) && firstBoxScore.length == 2,
                 splited: true,
-                result: ''
-            });
+                result: '',
+                win: 0
+            };
+            for (var i = Object.keys(boxes).length; i > this.state.currentBox; i--) {
+                if (boxes.hasOwnProperty(i)) {
+                    Object.defineProperty(boxes, i + 1, Object.getOwnPropertyDescriptor(boxes, i));
+                    delete boxes[i];
+                }
+            }
+            this.state.boxes[this.state.currentBox + 1] = {
+                bet: box.bet,
+                cards: secondBoxCards,
+                score: secondBoxScore,
+                split: secondBoxCards[0].value == secondBoxCards[1].value,
+                double: (secondBoxScore.includes(10) || secondBoxScore.includes(11)) && secondBoxScore.length == 2,
+                splited: true,
+                result: '',
+                win: 0
+            };
+
+            if (isAces) this.changeBox(this.state.currentBox - 1);else this.changeBox(this.state.currentBox + 1);
+            this.setState({ boxes: this.state.boxes });
         }
     }, {
         key: 'insurance',
         value: function insurance() {
+            var _this5 = this;
+
             var box = this.state.boxes[this.state.currentBox];
             box.insurance = box.bet / 2;
             this.props.onUpdateBalance(-box.insurance);
-            this.setState({ boxes: this.state.boxes });
-            this.changeBox();
+            this.setState({ insurance: true, boxes: this.state.boxes }, function () {
+                _this5.changeBox();
+            });
         }
     }, {
         key: 'openDealerCard',
         value: function openDealerCard() {
-            this.setState({ insurance: true, gameStatus: 'play' });
-            if (this.state.dealer.cards[1].value == 10) {
-                this.setState({ gameStatus: 'finish' });
-                this.gameResults();
+            this.setState({ gameStatus: 'play' });
+            if (this.state.insurance) {
+                this.state.dealer.score = this.countScore(this.state.dealer.cards);
+                this.setState({ openCard: true, dealer: this.state.dealer });
+                if (this.state.dealer.cards[1].value == 10) {
+                    this.finishGame();
+                    return;
+                }
             }
+            this.changeBox(this.props.numberOfBoxes);
         }
     }, {
         key: 'newGame',
         value: function newGame() {
+            var _this6 = this;
+
             var boxes = {};
             for (var i = 1; i <= this.props.numberOfBoxes; i++) {
                 boxes[i] = {
@@ -920,7 +982,9 @@ var Table = function (_React$Component) {
                     cards: [],
                     score: [],
                     split: false,
+                    double: false,
                     result: '',
+                    insurance: 0,
                     win: 0
                 };
             }
@@ -928,16 +992,22 @@ var Table = function (_React$Component) {
                 boxes: boxes,
                 dealer: {
                     cards: [],
-                    score: 0,
+                    score: [],
                     finish: false
                 },
-                gameStatus: 'bet'
+                gameStatus: 'bet',
+                openCard: false,
+                insurance: false,
+                alreadyDouble: false
+            }, function () {
+                _this6.deck();
             });
-            this.deck();
         }
     }, {
         key: 'rebet',
         value: function rebet() {
+            var _this7 = this;
+
             var boxes = {};
             for (var i = 1; i <= this.props.numberOfBoxes; i++) {
                 this.props.onUpdateBalance(-this.state.boxes[i].bet);
@@ -946,7 +1016,9 @@ var Table = function (_React$Component) {
                     cards: [],
                     score: [],
                     split: false,
+                    double: false,
                     result: '',
+                    insurance: 0,
                     win: 0
                 };
             }
@@ -954,12 +1026,17 @@ var Table = function (_React$Component) {
                 boxes: boxes,
                 dealer: {
                     cards: [],
-                    score: 0,
+                    score: [],
                     finish: false
                 },
-                gameStatus: 'bet'
+                gameStatus: 'bet',
+                openCard: false,
+                insurance: false,
+                alreadyDouble: false
+            }, function () {
+                _this7.deck();
+                _this7.deal();
             });
-            this.deck();
         }
     }, {
         key: 'countScore',
@@ -1014,30 +1091,49 @@ var Table = function (_React$Component) {
             var boxes = this.state.boxes;
             var dealerScore = this.state.dealer.score;
             var totalWin = 0;
-            for (var box in boxes) {
-                if (boxes[box].result == '' && boxes.hasOwnProperty(box)) {
-                    if (dealerScore > 21) {
-                        boxes[box].result = 'WIN';
-                    } else {
-                        if (dealerScore == 21 && this.state.dealer.cards.length == 2) boxes[box].result = 'NO WIN';else if (boxes[box].score > dealerScore) boxes[box].result = 'WIN';else if (boxes[box].score < dealerScore) boxes[box].result = 'NO WIN';else boxes[box].result = 'PUSH';
+            if (!this.state.dealer.blackjack) {
+                for (var box in boxes) {
+                    if (boxes[box].result == '' && boxes.hasOwnProperty(box)) {
+                        if (dealerScore > 21) {
+                            boxes[box].result = 'WIN';
+                        } else {
+                            if (boxes[box].score > dealerScore) boxes[box].result = 'WIN';else if (boxes[box].score < dealerScore) boxes[box].result = 'NO WIN';else boxes[box].result = 'PUSH';
+                        }
                     }
+                    switch (boxes[box].result) {
+                        case 'WIN':
+                            boxes[box].win = boxes[box].bet * 2;
+                            break;
+                        case 'PUSH':
+                            boxes[box].win = boxes[box].bet;
+                            break;
+                        case 'BJ':
+                            boxes[box].win = boxes[box].bet * 2.5;
+                            break;
+                        default:
+                            break;
+                    }
+                    totalWin += boxes[box].win;
                 }
-                switch (boxes[box].result) {
-                    case 'WIN':
-                        boxes[box].win = boxes[box].bet * 2;
-                        break;
-                    case 'PUSH':
-                        boxes[box].win = boxes[box].bet;
-                        break;
-                    case 'BJ':
-                        boxes[box].win = boxes[box].bet * 2.5;
-                        break;
-                    default:
-                        break;
+            } else {
+                for (var _box in boxes) {
+                    if (boxes[_box].result == '' && boxes.hasOwnProperty(_box)) {
+                        boxes[_box].result = 'NO WIN';
+                    }
+                    switch (boxes[_box].result) {
+                        case 'NO WIN':
+                            boxes[_box].win = boxes[_box].insurance * 2;
+                            break;
+                        case 'BJ':
+                            boxes[_box].win = boxes[_box].bet;
+                            boxes[_box].result = 'PUSH';
+                            break;
+                        default:
+                            break;
+                    }
+                    totalWin += boxes[_box].win;
                 }
-                totalWin += boxes[box].win;
             }
-
             this.props.onUpdateBalance(totalWin);
             this.setState({ boxes: boxes });
         }
@@ -1050,9 +1146,11 @@ var Table = function (_React$Component) {
                 dealer.cards = dealer.cards.concat(this.dealCards(1));
                 this.setState({ dealer: dealer });
                 this.dealDealer();
+            } else if (dealer.score.includes(21) && dealer.score.length == 2) {
+                dealer.blackjack = true;
+                this.setState({ dealer: dealer });
             } else {
                 this.setState({ dealer: dealer });
-                this.gameResults();
             }
         }
     }, {
@@ -1069,7 +1167,7 @@ var Table = function (_React$Component) {
                     Interface = _react2.default.createElement(_InsuranceInterface2.default, { currentBox: this.state.currentBox, onInsurance: this.insurance, onContinue: this.changeBox });
                     break;
                 case 'play':
-                    Interface = _react2.default.createElement(_PlayerInterface2.default, { double: box.double, onHit: this.hit, onStand: this.stand, onDouble: this.double, onSplit: this.split, currentBox: this.state.currentBox, split: box.split });
+                    Interface = _react2.default.createElement(_PlayerInterface2.default, { double: box.double, alreadyDouble: this.state.alreadyDouble, split: box.split, onHit: this.hit, onStand: this.stand, onDouble: this.double, onSplit: this.split, currentBox: this.state.currentBox });
                     break;
                 case 'finish':
                     Interface = _react2.default.createElement(_FinishInterface2.default, { onRebet: this.rebet, onNewGame: this.newGame });
@@ -1078,8 +1176,8 @@ var Table = function (_React$Component) {
                     break;
             }
 
-            for (var _box in this.state.boxes) {
-                boxes.push(_react2.default.createElement(_Box2.default, { box: this.state.boxes[_box], key: _box }));
+            for (var _box2 in this.state.boxes) {
+                boxes.push(_react2.default.createElement(_Box2.default, { box: this.state.boxes[_box2], key: _box2 }));
             }
             return _react2.default.createElement(
                 'div',
@@ -1093,7 +1191,7 @@ var Table = function (_React$Component) {
                 _react2.default.createElement(
                     'div',
                     { className: 'dealer-block' },
-                    _react2.default.createElement(_Dealer2.default, { dealer: this.state.dealer, insurance: this.state.insurance, gameStatus: this.state.gameStatus })
+                    _react2.default.createElement(_Dealer2.default, { dealer: this.state.dealer, openCard: this.state.openCard, gameStatus: this.state.gameStatus })
                 ),
                 _react2.default.createElement(
                     'div',
