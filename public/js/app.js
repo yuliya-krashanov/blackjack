@@ -833,7 +833,7 @@ var Table = function (_React$Component) {
             for (var box in boxes) {
                 if (boxes[box].bet > 0) {
                     noBet = false;
-                    boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
+                    if (box == 2) boxes[box].cards = boxes[box].cards.concat([{ rank: 'Q', value: 10, name: 'QH' }, { rank: 'J', value: 10, name: 'JC' }]);else boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
                     boxes[box].score = this.countScore(boxes[box].cards);
                     boxes[box].split = boxes[box].cards[0].value == boxes[box].cards[1].value;
                     boxes[box].double = (boxes[box].score.includes(10) || boxes[box].score.includes(11)) && boxes[box].cards.length == 2;
