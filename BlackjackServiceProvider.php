@@ -18,6 +18,7 @@ class BlackjackServiceProvider extends ServiceProvider {
             __DIR__.'/public' => public_path('vendor/blackjack'),
         ], 'public');
         require(__DIR__.'/routes.php');
+        $this->loadViewsFrom(__DIR__.'/Views', 'Blackjack');
     }
 
     public function register() {
