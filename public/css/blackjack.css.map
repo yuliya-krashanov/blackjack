@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,sBAAsB;EACpB,OAAO,EAAE,IAAI;EACb,KAAK,EAAE,IAAI;EACX,eAAe,EAAE,aAAa",
+"sources": ["../../resources/sass/blackjack.scss"],
+"names": [],
+"file": "blackjack.css"
+}

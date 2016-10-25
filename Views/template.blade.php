@@ -3,7 +3,7 @@
 <head>
     <title>@yield('title')</title>
     @section('styles')
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/blackjack/css/blackjack.css') }}">
     @show
 </head>
 <body>

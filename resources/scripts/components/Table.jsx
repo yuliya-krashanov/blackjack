@@ -13,7 +13,7 @@ export default class Table extends React.Component {
         let boxes = {};
         for (let i = 1; i <= this.props.numberOfBoxes; i++) {
             boxes[i] =  {
-                bet: 5,
+                bet: 0,
                 cards: [],
                 score: [],
                 split: false,
@@ -90,10 +90,7 @@ export default class Table extends React.Component {
         for (let box in boxes) {
             if (boxes[box].bet > 0){
                 noBet = false;
-                if(box == 2)
-                    boxes[box].cards = boxes[box].cards.concat([{rank: 'Q', value: 10, name: 'QH'},{rank: 'J', value: 10, name: 'JC'}]);
-                else
-                    boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
+                boxes[box].cards = boxes[box].cards.concat(this.dealCards(2));
                 boxes[box].score = this.countScore(boxes[box].cards);
                 boxes[box].split = ( boxes[box].cards[0].value == boxes[box].cards[1].value );
                 boxes[box].double = ( (boxes[box].score.includes(10) || boxes[box].score.includes(11)) && boxes[box].cards.length == 2 );
@@ -103,7 +100,6 @@ export default class Table extends React.Component {
         if (noBet){
             alert('No bets!'); return;
         }
-        //dealer.cards.push({rank: 'A', value: 11, name: 'AH'});
         dealer.cards = dealer.cards.concat(this.dealCards(2));
         dealer.score = this.countScore([dealer.cards[0]]);
         if (dealer.cards[0].value == 11) {
