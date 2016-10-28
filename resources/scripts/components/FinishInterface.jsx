@@ -6,7 +6,7 @@ export default class FinishInterface extends React.Component {
     }
     render() {
         return (
-            <div className="bet-block">
+            <div className="bet-block buttons">
                 <button onClick={this.props.onRebet}>Rebet</button>
                 <button onClick={this.props.onNewGame}>New Bets</button>
             </div>

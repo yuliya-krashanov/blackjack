@@ -1,0 +1,71 @@
+@import base/normalize
+@import base/typography
+
+@import modules/variables
+@import modules/mixins
+
+@import partials/card
+@import partials/button
+
+html
+  @extend .full-width-height
+  overflow: hidden
+  body
+    @extend .full-width-height
+    margin: 0
+    background: radial-gradient($gradient-first, $gradient-second)
+    #blackjack
+      width: 1360px
+      margin: 0 auto
+      .header
+        height: 50px
+        width: 100%
+        background: rgba(4, 49, 64, 0.7)
+        padding: 0 15px
+        +flex(center)
+        .results
+          text-transform: uppercase
+          label
+            color: #fff
+            margin-right: 5px
+          span
+            color: #E2B245
+      .dealer-block
+        margin: 50px 0 120px
+        min-height: 1px
+        .dealer
+          +flex(center, center, column)
+          .score
+            +score($score-black, $score-yellow)
+      .boxes
+        width: 100%
+        +flex($justify: space-between)
+        .box
+          +flex(center, $direction: column)
+          flex-basis: 28%
+          .bet, .win
+            +score($score-yellow, $score-black)
+            margin-bottom: 30px
+          .results
+            position: relative
+            top: -25px
+            .score
+              +score($score-black, $score-yellow)
+            .result
+              +score($score-black, $score-yellow)
+      .bet-block
+        .bets
+          +flex($justify: center)
+          li
+            width: 32px
+            height: 32px
+            border-radius: 24px
+            border: 5px solid $red-card
+            color: $red-card
+            background-color: #fff
+            line-height: 0
+            margin: 0 10px
+            +flex(center, center)
+      .buttons
+        width: 100%
+        +flex($justify: center)

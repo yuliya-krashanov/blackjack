@@ -15,6 +15,11 @@ class BlackjackRepository {
         $this->shuffleRepository = $shuffleRepository;
     }
 
+    /**
+     * Generate shuffled decks with values
+     *
+     * @return array
+     */
     public function genericDecks()
     {
         $numberOfCards = $this->decksNumber * 52;
@@ -46,12 +51,18 @@ class BlackjackRepository {
         return 5000;
     }
 
+    /**
+     * Return shuffled decks with values
+     *
+     * @param $shuffledDeck
+     * @return array
+     */
     private function genericValuableShuffledDeck($shuffledDeck)
     {
         $values = ['A' => 11, 'J' => 10, 'Q' => 10, 'K' => 10];
         return array_map(function($card) use ($values) {
            $value = is_string($card['rank']) ?  $values[$card['rank']] : $card['rank'];
-           return ['value' => $value, 'name' => $card['rank'] . $card['suit'], 'rank' => $card['rank']];
+           return ['value' => $value, 'rank' => $card['rank'], 'suit' => $card['suit']];
         }, $shuffledDeck);
     }
 

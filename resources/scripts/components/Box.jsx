@@ -6,9 +6,14 @@ export default class Box extends React.Component {
         super(props)
     }
 
+    componentWillReceiveProps(nextProps) {
+        let newCards = nextProps.box.cards;
+        //if (this.props.box.cards !== newCards)
+    }
+
     render() {
         let cards = this.props.box.cards.map((card, i) => {
-            return (<Card value={card.value} name={card.name} rank={card.rank} key={i}/>);
+            return (<Card suit={card.suit} rank={card.rank} key={i}/>);
         });
         let score = this.props.box.score.reduce(function (res, current) {
             if (res !== '') {
@@ -18,23 +23,28 @@ export default class Box extends React.Component {
             }
         }, '');
         const gameResults = (cards.length) ?
-            <div>
+            <div className="results">
                 {(() => {
                     if (this.props.box.insurance)
                         return ( <div className="insurance">Insurance:{this.props.box.insurance}</div>);
                 })()}
-                <div className="score">Score: {score}</div>
-                <div className="result">Result: {this.props.box.result}</div>
-                <div className="win">Win: {this.props.box.win}</div>
+                {(() => {
+                    if (this.props.box.result)
+                        return (<div className={this.props.box.result.toLowerCase() + ' result'}>{this.props.box.result}</div>);
+                    else return <div className="score">{score}</div>
+                })()}
             </div> : null;
         return (
-            <div className="box">
-                <label>Cards:</label>
+            <div className="box" onDragOver={this.props.onBet()}>
+                {(() => {
+                    if (this.props.box.win)
+                        return (<div className="win">{this.props.box.win}</div>);
+                    else return ( <div className="bet">{this.props.box.bet}</div>);
+                })()}
                 <div className="cards">
                     {cards}
                 </div>
                 {gameResults}
-                <div className="bet">Bet: {this.props.box.bet}</div>
             </div>
         );
 

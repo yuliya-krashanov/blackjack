@@ -5,16 +5,23 @@ export default class BetInterface extends React.Component {
         super(props);
     }
     render() {
-        const bets = this.props.betSizes.map((bet, i) => {
+        /*const bets = this.props.betSizes.map((bet, i) => {
             return (<option key={i} value={bet}>{bet}</option>)
+        });*/
+        const bets = this.props.betSizes.map((bet, i) => {
+            return (<li  draggable="true" key={i}>{bet}</li>)
         });
         let boxes = [];
         for (let i = 1; i <= this.props.numberOfBoxes; i++){
             boxes.push(<option key={i} value={i}>{i}</option>)
         }
         return (
-            <div className="bet-block">
+            <div className="bet-block buttons">
+                <ul className="bets">
+                    {bets}
+                </ul>
                 <form onSubmit={this.props.onChangeBets}>
+
                     <select name="bet-amount" id="bet-amount">
                         {bets}
                     </select>

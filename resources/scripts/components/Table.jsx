@@ -149,13 +149,13 @@ export default class Table extends React.Component {
 
     split(){
         let box = this.state.boxes[this.state.currentBox];
-        this.props.onUpdateBalance(-box.bet);
-        const isAces = box.cards[0].value == 11;
-        let firstBoxCards = [box.cards[0]].concat(this.dealCards(1));
-        let secondBoxCards = [box.cards[1]].concat(this.dealCards(1));
-        let firstBoxScore = this.countScore(firstBoxCards);
-        let secondBoxScore = this.countScore(secondBoxCards);
         let boxes = this.state.boxes;
+        this.props.onUpdateBalance(-box.bet);
+        const isAces = box.cards[0].value == 11,
+            firstBoxCards = [box.cards[0]].concat(this.dealCards(1)),
+            secondBoxCards = [box.cards[1]].concat(this.dealCards(1)),
+            firstBoxScore = this.countScore(firstBoxCards),
+            secondBoxScore = this.countScore(secondBoxCards);
 
        boxes[this.state.currentBox] =  {
             bet: box.bet,
@@ -167,12 +167,14 @@ export default class Table extends React.Component {
             result: '',
             win: 0
         };
+
         for (let i = Object.keys(boxes).length; i > this.state.currentBox; i--){
             if (boxes.hasOwnProperty(i))  {
                 Object.defineProperty(boxes, i+1, Object.getOwnPropertyDescriptor(boxes, i));
                 delete boxes[i];
             }
         }
+
         this.state.boxes[this.state.currentBox + 1] =  {
             bet: box.bet,
             cards: secondBoxCards,
@@ -184,8 +186,11 @@ export default class Table extends React.Component {
             win: 0
         };
 
-        if (isAces) this.changeBox(this.state.currentBox - 1);
-        else this.changeBox(this.state.currentBox + 1);
+        if (isAces)
+            this.changeBox(this.state.currentBox - 1);
+        else
+            this.changeBox(this.state.currentBox + 1);
+
         this.setState({boxes: this.state.boxes});
     }
 
@@ -378,12 +383,11 @@ export default class Table extends React.Component {
             dealer.cards = dealer.cards.concat(this.dealCards(1));
             this.setState({dealer: dealer});
             this.dealDealer();
+            return;
         }else if (dealer.score.includes(21) && dealer.score.length == 2){
             dealer.blackjack = true;
-            this.setState({dealer: dealer});
-        }else {
-            this.setState({dealer: dealer});
         }
+        this.setState({dealer: dealer});
     }
 
     render() {
@@ -407,11 +411,16 @@ export default class Table extends React.Component {
         }
 
         for (let box in this.state.boxes){
-            boxes.push(<Box box={this.state.boxes[box]} key={box}  />);
+            boxes.push(<Box box={this.state.boxes[box]} onBet={this.bet} key={box}  />);
         }
         return (
             <div className="table">
-                <p>Balance: {this.props.balance}</p>
+                <div className="header">
+                    <div className="results">
+                        <label htmlFor="balance">Balance</label>
+                        <span id="balance">{this.props.balance}</span>
+                    </div>
+                </div>
                 <div className="dealer-block">
                     <Dealer dealer={this.state.dealer} openCard={this.state.openCard} gameStatus={this.state.gameStatus} />
                 </div>

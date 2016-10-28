@@ -5,20 +5,30 @@ export default class Card extends React.Component {
         super(props)
     }
     render(){
+        let className = 'suit-' + this.props.suit.toLowerCase();
+        className += (this.props.hide) ? ' flip' : '';
         return (
-            <div className="card">
-                <span>{this.props.name}({this.props.value})</span>
+            <div className="card-wrapper">
+                <div className={'card ' + className}>
+                    <figure className="back"></figure>
+                    {(() => {
+                        if(!this.props.hide) return  (
+                            <figure className="front">
+                                <span className="angular">{this.props.rank}</span>
+                                <span className="center">{this.props.rank}</span>
+                            </figure>);
+                        else return  (<figure className="front"></figure>);
+                    })()}
+                </div>
             </div>
         );
     }
 }
 
 Card.propTypes = {
-    value: React.PropTypes.number,
-    name:  React.PropTypes.string
+    suit: React.PropTypes.string
 };
 Card.defaultProps = {
-    value: 0,
-    name: '',
-    rank: ''
+    suit: 'H',
+    rank: 10
 };

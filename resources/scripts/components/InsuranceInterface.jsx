@@ -10,9 +10,9 @@ export default class InsuranceInterface extends React.Component {
     }
     render(){
         return (
-            <div className="insurance"> 
-                <button onClick={this.props.onInsurance}>Insurance {this.props.currentBox} box</button>               
-                <button onClick={this.onContinue}>Continue</button>
+            <div className="insurance buttons">
+                <button onClick={this.props.onInsurance}>Insurance {this.props.currentBox} box</button>
+                <button onClick={this.onContinue}>No, continue</button>
             </div>            
         );
     }

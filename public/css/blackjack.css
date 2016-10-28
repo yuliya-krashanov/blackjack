@@ -1,6 +1,359 @@
-.boxes, .play .buttons {
-  display: flex;
+@charset "UTF-8";
+/*! normalize.css v3.0.0 | MIT License | git.io/normalize */
+@import "https://fonts.googleapis.com/css?family=Lato";
+html {
+  font-family: sans-serif;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0; }
+
+/* HTML5 display definitions
+ * ========================================================================== */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+main,
+menu,
+nav,
+section,
+summary {
+  display: block; }
+
+audio,
+canvas,
+progress,
+video {
+  display: inline-block;
+  vertical-align: baseline; }
+
+audio:not([controls]) {
+  display: none;
+  height: 0; }
+
+template {
+  display: none; }
+
+[hidden] {
+  display: none; }
+
+/* Links
+ * ========================================================================== */
+a:active, a:hover {
+  outline: 0; }
+
+/* Text-level semantics
+ * ========================================================================== */
+abbr[title] {
+  border-bottom: 1px dotted; }
+
+mark {
+  background: #ff0;
+  color: #000; }
+
+small {
+  font-size: 80%; }
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline; }
+
+sup {
+  top: -0.5em; }
+
+sub {
+  bottom: -0.25em; }
+
+/* Embedded content
+ * ========================================================================== */
+img {
+  border: 0; }
+
+svg:not(:root) {
+  overflow: hidden; }
+
+/* Grouping content
+ * ========================================================================== */
+figure {
+  margin: 1em 40px; }
+
+hr {
+  box-sizing: content-box;
+  height: 0; }
+
+pre {
+  overflow: auto; }
+
+code,
+kbd,
+pre,
+samp {
+  font-family: monospace, monospace;
+  font-size: 1em; }
+
+/* Forms
+ * ========================================================================== */
+button,
+input,
+optgroup,
+select,
+textarea {
+  color: inherit;
+  font: inherit; }
+
+button {
+  overflow: visible; }
+
+button {
+  text-transform: none; }
+
+html input[type="button"],
+button,
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: button;
+  cursor: pointer; }
+
+button[disabled],
+html input[disabled] {
+  cursor: default; }
+
+input[type="checkbox"],
+input[type="radio"] {
+  box-sizing: border-box;
+  padding: 0; }
+
+input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button {
+  height: auto; }
+
+input[type="search"] {
+  appearance: textfield;
+  box-sizing: content-box; }
+  input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration {
+    appearance: none; }
+
+fieldset {
+  border: 1px solid #c0c0c0;
+  margin: 0 2px;
+  padding: 0.35em 0.625em 0.75em; }
+
+legend {
+  border: 0;
+  padding: 0; }
+
+textarea {
+  overflow: auto; }
+
+optgroup {
+  font-weight: bold; }
+
+/* Tables
+ * ========================================================================== */
+table {
+  border-collapse: collapse;
+  border-spacing: 0; }
+
+td,
+th {
+  padding: 0; }
+
+body {
+  font-family: "Lato", sans-serif; }
+
+.full-width-height, .card-wrapper .card, .card-wrapper .card figure, html, html body {
   width: 100%;
-  justify-content: space-between; }
+  height: 100%; }
+
+.card-wrapper {
+  width: 60px;
+  height: 85px;
+  position: relative;
+  display: inline-block;
+  perspective: 600px;
+  padding: 0 3px; }
+  .card-wrapper.double {
+    transform: rotate(90deg);
+    position: absolute;
+    left: 40%;
+    top: 20px; }
+  .card-wrapper .card {
+    top: 0;
+    left: 0;
+    position: relative;
+    transition: transform 0.5s;
+    transform-style: preserve-3d; }
+    .card-wrapper .card.flip {
+      transform: rotateY(180deg); }
+    .card-wrapper .card figure {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: row;
+      backface-visibility: hidden;
+      margin: 0;
+      border-radius: 6px;
+      border: 1px solid #040707; }
+      .card-wrapper .card figure.back {
+        background: url(../img/card_back.jpg);
+        transform: rotateY(180deg);
+        background-size: contain; }
+      .card-wrapper .card figure.front {
+        background-color: #fff; }
+        .card-wrapper .card figure.front span {
+          text-transform: uppercase; }
+          .card-wrapper .card figure.front span:after {
+            content: "&#9824"; }
+          .card-wrapper .card figure.front span.angular {
+            position: absolute;
+            top: 0;
+            left: 5px;
+            font-size: 15px;
+            align-self: flex-start; }
+          .card-wrapper .card figure.front span.center {
+            font-size: 30px; }
+    .card-wrapper .card.suit-h .front span {
+      color: #A6282F; }
+      .card-wrapper .card.suit-h .front span:after {
+        content: "♥"; }
+    .card-wrapper .card.suit-d .front span {
+      color: #A6282F; }
+      .card-wrapper .card.suit-d .front span:after {
+        content: "♦"; }
+    .card-wrapper .card.suit-c .front span {
+      color: #040707; }
+      .card-wrapper .card.suit-c .front span:after {
+        content: "♣"; }
+    .card-wrapper .card.suit-s .front span {
+      color: #040707; }
+      .card-wrapper .card.suit-s .front span:after {
+        content: "♠"; }
+
+button {
+  padding: 15px 30px;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 16px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 5px;
+  margin: 0 15px; }
+
+html {
+  overflow: hidden; }
+  html body {
+    margin: 0;
+    background: radial-gradient(#0A7A9F, #074C65); }
+    html body #blackjack {
+      width: 1360px;
+      margin: 0 auto; }
+      html body #blackjack .header {
+        height: 50px;
+        width: 100%;
+        background: rgba(4, 49, 64, 0.7);
+        padding: 0 15px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-direction: row; }
+        html body #blackjack .header .results {
+          text-transform: uppercase; }
+          html body #blackjack .header .results label {
+            color: #fff;
+            margin-right: 5px; }
+          html body #blackjack .header .results span {
+            color: #E2B245; }
+      html body #blackjack .dealer-block {
+        margin: 50px 0 120px;
+        min-height: 1px; }
+        html body #blackjack .dealer-block .dealer {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column; }
+          html body #blackjack .dealer-block .dealer .score {
+            display: inline-block;
+            color: #040707;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border: 2px solid #040707;
+            border-radius: 7px;
+            background-color: #E5B548; }
+      html body #blackjack .boxes {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-direction: row; }
+        html body #blackjack .boxes .box {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          flex-direction: column;
+          flex-basis: 28%; }
+          html body #blackjack .boxes .box .bet, html body #blackjack .boxes .box .win {
+            display: inline-block;
+            color: #E5B548;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border: 2px solid #040707;
+            border-radius: 7px;
+            background-color: #040707;
+            margin-bottom: 30px; }
+          html body #blackjack .boxes .box .results {
+            position: relative;
+            top: -25px; }
+            html body #blackjack .boxes .box .results .score {
+              display: inline-block;
+              color: #040707;
+              font-size: 16px;
+              font-weight: 700;
+              padding: 5px 10px;
+              border: 2px solid #040707;
+              border-radius: 7px;
+              background-color: #E5B548; }
+            html body #blackjack .boxes .box .results .result {
+              display: inline-block;
+              color: #040707;
+              font-size: 16px;
+              font-weight: 700;
+              padding: 5px 10px;
+              border: 2px solid #040707;
+              border-radius: 7px;
+              background-color: #E5B548; }
+      html body #blackjack .bet-block .bets {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        flex-direction: row; }
+        html body #blackjack .bet-block .bets li {
+          width: 32px;
+          height: 32px;
+          border-radius: 24px;
+          border: 5px solid #A6282F;
+          color: #A6282F;
+          background-color: #fff;
+          line-height: 0;
+          margin: 0 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: row; }
+      html body #blackjack .buttons {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        flex-direction: row; }
 
 /*# sourceMappingURL=blackjack.css.map */

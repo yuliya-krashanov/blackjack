@@ -1,0 +1,73 @@
+$suit-signs: ("h": "\2665", "d": "\2666", "c": "\2663", "s": "\2660")
+$suit-colors: ("h": $red-card, "d": $red-card, "c": $black-card, "s": $black-card)
+
+.full-width-height
+  width: 100%
+  height: 100%
+
+.card-wrapper
+  width: $card-width
+  height: $card-height
+  position: relative
+  display: inline-block
+  perspective: 600px
+  padding: 0 3px
+  //@for $i from 2 to 8
+    &:nth-child(#{$i})
+      right: $card-width / 2 * ($i - 1) - $i + 1
+  &.double
+    transform: rotate(90deg)
+    position: absolute
+    left: 40%
+    top: 20px
+  .card
+    top: 0
+    left: 0
+    @extend .full-width-height
+    position: relative
+    transition: transform 0.5s
+    transform-style: preserve-3d
+    &.flip
+      transform: rotateY(180deg)
+    figure
+      @extend .full-width-height
+      position: absolute
+      +flex(center, center)
+      backface-visibility: hidden
+      margin: 0
+      border-radius: 6px
+      border: 1px solid $black-card
+      &.back
+        background: url(../img/card_back.jpg)
+        transform: rotateY(180deg)
+        background-size: contain
+      &.front
+        background-color: #fff
+        span
+          text-transform: uppercase
+          &:after
+            content: '&#9824'
+          &.angular
+            position: absolute
+            top: 0
+            left: 5px
+            font-size: 15px
+            align-self: flex-start
+          &.center
+            font-size: 30px
+    @each $suit, $sign in $suit-signs
+      &.suit-#{$suit} .front span
+        color: map_get($suit-colors, $suit)
+        &:after
+          content: $sign
+
+
+
+
+
+
+
+
+
+
+
