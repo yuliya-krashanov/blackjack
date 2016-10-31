@@ -7,7 +7,6 @@ export default class PlayerInterface extends React.Component {
     render(){
         return (
             <div className="play">
-                <p className="current" style={{textAlign: 'center'}}>Playing BOX: <b>{this.props.currentBox}</b></p>
                 <div className="buttons">
                     <button onClick={this.props.onHit}>Hit</button>
                     <button onClick={this.props.onStand}>Stand</button>

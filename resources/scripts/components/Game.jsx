@@ -5,6 +5,7 @@ import Table from './Table.jsx';
 export default class Game extends React.Component {
     constructor(props) {
         super(props);
+        this.mobile = window.innerWidth <= 800;
         this.state = {
             balance: 0
         };
@@ -41,7 +42,9 @@ export default class Game extends React.Component {
     }
 
     render(){
-        return ( <Table deckSource='/blackjack/deck' balance={this.state.balance} onUpdateBalance={this.updateBalance} numberOfBoxes={3} />);
+        console.log(this.mobile);
+        let numberOfBoxes = (this.mobile) ? 1 : 3;
+        return ( <Table deckSource='/blackjack/deck' balance={this.state.balance} onUpdateBalance={this.updateBalance} numberOfBoxes={numberOfBoxes} mobile={this.mobile} />);
     }
 }
 

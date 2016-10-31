@@ -30817,7 +30817,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 _reactDom2.default.render(_react2.default.createElement(_Game2.default, { balanceSource: "/blackjack/balance" }), document.getElementById('blackjack'));
 
 },{"./components/Game.jsx":178,"lodash":182,"react":171,"react-dom":28}],173:[function(require,module,exports){
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -30825,7 +30825,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _react = require("react");
+var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
@@ -30847,57 +30847,53 @@ var BetInterface = function (_React$Component) {
     }
 
     _createClass(BetInterface, [{
-        key: "render",
+        key: 'handleBetDragStart',
+        value: function handleBetDragStart(e) {
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData("bet", e.target.innerHTML);
+            return true;
+        }
+    }, {
+        key: 'handleClick',
+        value: function handleClick(e) {
+            if (this.props.mobile) this.props.onChangeBets(e, 1, e.target.innerHTML);
+        }
+    }, {
+        key: 'render',
         value: function render() {
-            /*const bets = this.props.betSizes.map((bet, i) => {
-                return (<option key={i} value={bet}>{bet}</option>)
-            });*/
+            var _this2 = this;
+
             var bets = this.props.betSizes.map(function (bet, i) {
                 return _react2.default.createElement(
-                    "li",
-                    { draggable: "true", key: i },
+                    'li',
+                    { draggable: 'true', onClick: _this2.handleClick.bind(_this2), onDragStart: _this2.handleBetDragStart, key: i },
                     bet
                 );
             });
             var boxes = [];
             for (var i = 1; i <= this.props.numberOfBoxes; i++) {
                 boxes.push(_react2.default.createElement(
-                    "option",
+                    'option',
                     { key: i, value: i },
                     i
                 ));
             }
             return _react2.default.createElement(
-                "div",
-                { className: "bet-block buttons" },
+                'div',
+                { className: 'bet-block' },
                 _react2.default.createElement(
-                    "ul",
-                    { className: "bets" },
+                    'ul',
+                    { className: 'bets buttons' },
                     bets
                 ),
                 _react2.default.createElement(
-                    "form",
-                    { onSubmit: this.props.onChangeBets },
+                    'div',
+                    { className: 'buttons' },
                     _react2.default.createElement(
-                        "select",
-                        { name: "bet-amount", id: "bet-amount" },
-                        bets
-                    ),
-                    _react2.default.createElement(
-                        "select",
-                        { name: "box-number", id: "box-number" },
-                        boxes
-                    ),
-                    _react2.default.createElement(
-                        "button",
-                        null,
-                        "Bet"
+                        'button',
+                        { onClick: this.props.onDeal },
+                        'Deal'
                     )
-                ),
-                _react2.default.createElement(
-                    "button",
-                    { onClick: this.props.onDeal },
-                    "Deal"
                 )
             );
         }
@@ -30960,6 +30956,17 @@ var Box = function (_React$Component) {
             //if (this.props.box.cards !== newCards)
         }
     }, {
+        key: 'handleBoxDragOver',
+        value: function handleBoxDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+    }, {
+        key: 'handleBoxDrop',
+        value: function handleBoxDrop(e) {
+            this.props.onBet(e, this.props.number);
+        }
+    }, {
         key: 'render',
         value: function render() {
             var _this2 = this;
@@ -30999,7 +31006,7 @@ var Box = function (_React$Component) {
             ) : null;
             return _react2.default.createElement(
                 'div',
-                { className: 'box', onDragOver: this.props.onBet() },
+                { className: 'box ' + this.props.active, onDrop: this.handleBoxDrop.bind(this), onDragOver: this.handleBoxDragOver },
                 function () {
                     if (_this2.props.box.win) return _react2.default.createElement(
                         'div',
@@ -31285,6 +31292,7 @@ var Game = function (_React$Component) {
 
         var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this, props));
 
+        _this.mobile = window.innerWidth <= 800;
         _this.state = {
             balance: 0
         };
@@ -31329,7 +31337,9 @@ var Game = function (_React$Component) {
     }, {
         key: 'render',
         value: function render() {
-            return _react2.default.createElement(_Table2.default, { deckSource: '/blackjack/deck', balance: this.state.balance, onUpdateBalance: this.updateBalance, numberOfBoxes: 3 });
+            console.log(this.mobile);
+            var numberOfBoxes = this.mobile ? 1 : 3;
+            return _react2.default.createElement(_Table2.default, { deckSource: '/blackjack/deck', balance: this.state.balance, onUpdateBalance: this.updateBalance, numberOfBoxes: numberOfBoxes, mobile: this.mobile });
         }
     }]);
 
@@ -31449,16 +31459,6 @@ var PlayerInterface = function (_React$Component) {
             return _react2.default.createElement(
                 "div",
                 { className: "play" },
-                _react2.default.createElement(
-                    "p",
-                    { className: "current", style: { textAlign: 'center' } },
-                    "Playing BOX: ",
-                    _react2.default.createElement(
-                        "b",
-                        null,
-                        this.props.currentBox
-                    )
-                ),
                 _react2.default.createElement(
                     "div",
                     { className: "buttons" },
@@ -31610,10 +31610,11 @@ var Table = function (_React$Component) {
         }
     }, {
         key: 'bet',
-        value: function bet(e) {
-            e.preventDefault();
-            var amount = e.target.elements['bet-amount'].value;
-            var box = e.target.elements['box-number'].value;
+        value: function bet(e, box, amount) {
+            if (!this.props.mobile) {
+                e.stopPropagation();
+                amount = e.dataTransfer.getData('bet');
+            }
             if (this.props.balance - amount < 0) alert('Not enough money :(');else {
                 this.state.boxes[box].bet += +amount;
                 this.setState({
@@ -31973,7 +31974,7 @@ var Table = function (_React$Component) {
             var box = this.state.boxes[this.state.currentBox];
             switch (this.state.gameStatus) {
                 case 'bet':
-                    Interface = _react2.default.createElement(_BetInterface2.default, { numberOfBoxes: this.props.numberOfBoxes, betSizes: this.betSizes, onChangeBets: this.bet, onDeal: this.deal });
+                    Interface = _react2.default.createElement(_BetInterface2.default, { numberOfBoxes: this.props.numberOfBoxes, betSizes: this.betSizes, onChangeBets: this.bet, onDeal: this.deal, mobile: this.props.mobile });
                     break;
                 case 'insurance':
                     Interface = _react2.default.createElement(_InsuranceInterface2.default, { currentBox: this.state.currentBox, onInsurance: this.insurance, onContinue: this.changeBox });
@@ -31989,7 +31990,9 @@ var Table = function (_React$Component) {
             }
 
             for (var _box2 in this.state.boxes) {
-                boxes.push(_react2.default.createElement(_Box2.default, { box: this.state.boxes[_box2], onBet: this.bet, key: _box2 }));
+                var active = '';
+                if (_box2 == this.state.currentBox) active = 'active';
+                boxes.push(_react2.default.createElement(_Box2.default, { box: this.state.boxes[_box2], onBet: this.bet, number: _box2, key: _box2, active: active }));
             }
             return _react2.default.createElement(
                 'div',

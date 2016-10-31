@@ -11,6 +11,15 @@ export default class Box extends React.Component {
         //if (this.props.box.cards !== newCards)
     }
 
+    handleBoxDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    }
+
+    handleBoxDrop(e){
+        this.props.onBet(e, this.props.number);
+    }
+
     render() {
         let cards = this.props.box.cards.map((card, i) => {
             return (<Card suit={card.suit} rank={card.rank} key={i}/>);
@@ -35,7 +44,7 @@ export default class Box extends React.Component {
                 })()}
             </div> : null;
         return (
-            <div className="box" onDragOver={this.props.onBet()}>
+            <div className={'box ' + this.props.active} onDrop={this.handleBoxDrop.bind(this)} onDragOver={this.handleBoxDragOver}>
                 {(() => {
                     if (this.props.box.win)
                         return (<div className="win">{this.props.box.win}</div>);

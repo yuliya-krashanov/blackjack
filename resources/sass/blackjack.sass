@@ -6,6 +6,7 @@
 
 @import partials/card
 @import partials/button
+@import partials/bet
 
 html
   @extend .full-width-height
@@ -14,9 +15,13 @@ html
     @extend .full-width-height
     margin: 0
     background: radial-gradient($gradient-first, $gradient-second)
-    #blackjack
-      width: 1360px
+    .container
+      width: $full-container-width
       margin: 0 auto
+      @media (max-width: 1200px)
+        width: $tablet-width
+      @media (max-width: $tablet-width)
+        width: 100%
       .header
         height: 50px
         width: 100%
@@ -43,6 +48,13 @@ html
         .box
           +flex(center, $direction: column)
           flex-basis: 28%
+          height: 200px
+          background-image: none
+          transition: all 0.7s ease
+          @media (max-width: $tablet-width)
+            flex-basis: 100%
+          &.active
+            background-image: radial-gradient(circle, rgba(255,255,255,0.7) 0%, transparent 47%)
           .bet, .win
             +score($score-yellow, $score-black)
             margin-bottom: 30px

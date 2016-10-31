@@ -58,10 +58,11 @@ export default class Table extends React.Component {
         this.deck();
     }
 
-    bet(e){
-        e.preventDefault();
-        const amount = e.target.elements['bet-amount'].value;
-        const box = e.target.elements['box-number'].value;
+    bet(e, box, amount){
+        if (!this.props.mobile){
+            e.stopPropagation();
+            amount = e.dataTransfer.getData('bet');
+        }
         if ((this.props.balance - amount) < 0)
             alert('Not enough money :(');
         else{
@@ -72,6 +73,7 @@ export default class Table extends React.Component {
             this.props.onUpdateBalance(-amount);
         }
     }
+
 
     deck(){
         $.get(this.props.deckSource, null,(result) => {
@@ -395,7 +397,7 @@ export default class Table extends React.Component {
         const box = this.state.boxes[this.state.currentBox];
         switch (this.state.gameStatus) {
             case 'bet':
-                Interface = <BetInterface numberOfBoxes={this.props.numberOfBoxes} betSizes={this.betSizes} onChangeBets={this.bet} onDeal={this.deal} />;
+                Interface = <BetInterface numberOfBoxes={this.props.numberOfBoxes} betSizes={this.betSizes} onChangeBets={this.bet} onDeal={this.deal} mobile={this.props.mobile} />;
                 break;
             case 'insurance':
                 Interface = <InsuranceInterface currentBox={this.state.currentBox} onInsurance={this.insurance} onContinue={this.changeBox} />;
@@ -411,7 +413,10 @@ export default class Table extends React.Component {
         }
 
         for (let box in this.state.boxes){
-            boxes.push(<Box box={this.state.boxes[box]} onBet={this.bet} key={box}  />);
+            let active = '';
+            if (box == this.state.currentBox)
+                active = 'active';
+            boxes.push(<Box box={this.state.boxes[box]} onBet={this.bet} number={box} key={box} active={active} />);
         }
         return (
             <div className="table">
